@@ -50,6 +50,22 @@ References:
 - VS Code extension — https://marketplace.visualstudio.com/items?itemName=Oracle.oracle-java
 - Notebook details — https://github.com/oracle/javavscode/wiki/Interactive-Java-Notebooks
 
+Special note: Using JDK early access (EA) builds in VS Code
+- This setup makes it easier to experiment with early access JDK builds using the Oracle Java extension:
+  1) Open VS Code Settings and enable: Jdk › Advanced › Disable: Nbjavac
+  2) Set: Jdk: Jdkhome to the home-folder path of the early access JDK
+
+Examples (Jdkhome):
+- macOS: /Library/Java/JavaVirtualMachines/jdk-26.jdk/Contents/Home
+- Windows: C:\Program Files\Java\jdk-26
+- Linux: /usr/lib/jvm/jdk-26
+
+```
+"jdk.jdkhome": "/Library/Java/JavaVirtualMachines/jdk-26.jdk/Contents/Home",
+"jdk.advanced.disable.nbjavac": true
+```
+Tip: Download EA builds from https://jdk.java.net/
+
 If your editor does not support `.ijnb`, you can copy code cells into a `.java` file and run with `javac`/`java`.
 
 ## Running the demos (quick start)
