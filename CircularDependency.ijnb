@@ -1,0 +1,139 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 5,
+  "metadata": {
+    "language_info": {
+      "name": "java"
+    }
+  },
+  "cells": [
+    {
+      "id": "b6cba5b8-4e9d-4b72-b633-049fc73a503b",
+      "cell_type": "markdown",
+      "source": "####  How We Detected Circular Dependencies - During Microservice REST API OpenAPI Generation \n\nOn of our REST API OpenAPI spec generation was failing due to circular dependencies. Metadata was in JSON format.  ",
+      "metadata": {
+        "language": "markdown",
+        "id": "b6cba5b8-4e9d-4b72-b633-049fc73a503b"
+      }
+    },
+    {
+      "id": "f5a7adc4-d001-4b24-9905-e26fa50b73c7",
+      "cell_type": "markdown",
+      "source": "The REST API is `/api/connections`",
+      "metadata": {
+        "language": "markdown",
+        "id": "f5a7adc4-d001-4b24-9905-e26fa50b73c7"
+      }
+    },
+    {
+      "id": "48f160d3-df44-4904-87dc-ce465dcf0346",
+      "cell_type": "markdown",
+      "source": "![Local Diagram](./images/connections.png)",
+      "metadata": {
+        "language": "markdown",
+        "id": "48f160d3-df44-4904-87dc-ce465dcf0346"
+      }
+    },
+    {
+      "id": "2b19f45f-a8ff-486a-8e1f-5fa7a21637ac",
+      "cell_type": "markdown",
+      "source": "```\ngraph Connections {\n    Aarav -- Vivaan\n    Aarav -- Aditya\n    Arjun -- Siddharth\n    Arjun -- Vivaan\n    Siddharth -- Karan\n    Rahul -- Rohan\n    Aditya -- Karan\n    Aniket -- Pranav\n    Abhishek -- Saurabh\n    Manish -- Rajat\n    Devansh -- Rajat\n    Abhishek -- Manish\n    Saurabh -- Devansh\n    Pranav -- Abhishek\n    Aarav -- Siddharth\n}\n\n```",
+      "metadata": {
+        "language": "markdown",
+        "id": "2b19f45f-a8ff-486a-8e1f-5fa7a21637ac"
+      }
+    },
+    {
+      "id": "6e159297-e1b8-4526-adf1-40a63966fa1b",
+      "cell_type": "code",
+      "source": "public record Product(\n    String sku,\n    String name,\n    ScrumTeam scrumTeam\n) {}\n\npublic record ScrumTeam(\n    String teamName,\n    List<String> developers,\n    List<CloudResource> cloudResources\n){}\n\npublic record CloudResource(\n    String resourceName,\n    CloudResourceType type,\n    ScrumTeam scrumTeam\n){}\n\npublic enum CloudResourceType{DB, VM, STORAGE}",
+      "metadata": {
+        "language": "java",
+        "id": "6e159297-e1b8-4526-adf1-40a63966fa1b",
+        "executionSummary": {
+          "executionOrder": 4,
+          "success": true
+        }
+      },
+      "execution_count": 4,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {},
+          "metadata": {},
+          "execution_count": 4
+        }
+      ]
+    },
+    {
+      "id": "7aae7cb0-78e1-44fc-a1ef-296291dc5fde",
+      "cell_type": "markdown",
+      "source": "Our product is called Digital Wallet",
+      "metadata": {
+        "language": "markdown",
+        "id": "7aae7cb0-78e1-44fc-a1ef-296291dc5fde"
+      }
+    },
+    {
+      "id": "6251f169-ce5a-43dd-9bbc-c0cc35c60345",
+      "cell_type": "code",
+      "source": "\n// scrum team\nScrumTeam scrumTeam = new ScrumTeam(\"Duke\", List.of(\"Sunit\", \"Sumit\", \"Sujit\", \"Suhit\"), null);\n\n// Cloud Resources\nCloudResource resourceDB = new CloudResource(\"Autonoumous DB\", CloudResourceType.DB, scrumTeam);\nCloudResource resourceCompute = new CloudResource(\"VM.Standard.E11.Flex\", CloudResourceType.VM, scrumTeam);\nCloudResource resourceStorage = new CloudResource(\"Block Volume\", CloudResourceType.STORAGE, scrumTeam);\n\n// Product\nProduct prod = new Product(\"DigitalWallet\", \"Digital Wallet\", scrumTeam);",
+      "metadata": {
+        "language": "java",
+        "id": "6251f169-ce5a-43dd-9bbc-c0cc35c60345",
+        "executionSummary": {
+          "executionOrder": 5,
+          "success": true
+        }
+      },
+      "execution_count": 5,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {},
+          "metadata": {},
+          "execution_count": 5
+        }
+      ]
+    },
+    {
+      "id": "877b8404-7d03-460d-a840-0dff97dda475",
+      "cell_type": "code",
+      "source": "\n// scrum team\nScrumTeam scrumTeam = new ScrumTeam(\"Duke\", List.of(\"Sunit\", \"Sumit\", \"Sujit\", \"Suhit\"), null);\n\n// Cloud Resources\nCloudResource resourceDB = new CloudResource(\"Autonoumous DB\", CloudResourceType.DB, scrumTeam);\nCloudResource resourceCompute = new CloudResource(\"VM.Standard.E11.Flex\", CloudResourceType.VM, scrumTeam);\nCloudResource resourceStorage = new CloudResource(\"Block Volume\", CloudResourceType.STORAGE, scrumTeam);\n\n// Product\nProduct prod = new Product(\"DigitalWallet\", \"Digital Wallet\", scrumTeam);",
+      "metadata": {
+        "language": "java"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {},
+          "metadata": {},
+          "execution_count": null
+        }
+      ]
+    },
+    {
+      "id": "fbd111eb-4757-4a32-a09d-b6e1f3ad02d5",
+      "cell_type": "code",
+      "source": "",
+      "metadata": {
+        "language": "java",
+        "id": "fbd111eb-4757-4a32-a09d-b6e1f3ad02d5",
+        "executionSummary": {
+          "executionOrder": 6,
+          "success": true
+        }
+      },
+      "execution_count": 6,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {},
+          "metadata": {},
+          "execution_count": 6
+        }
+      ]
+    }
+  ]
+}
