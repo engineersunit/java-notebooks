@@ -1,0 +1,444 @@
+# =============================================================================
+# Global .gitignore (catch‑all)
+# Covers common OS files, popular IDE/editor metadata, build artifacts,
+# dependency caches, and outputs across many languages and frameworks.
+# Review and prune as needed for your specific project(s).
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Operating Systems
+# -----------------------------------------------------------------------------
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+*~
+.nfs*
+
+# -----------------------------------------------------------------------------
+# Editors / IDEs
+# -----------------------------------------------------------------------------
+# VS Code
+.vscode/
+.history/
+.code-workspace
+
+# JetBrains (IntelliJ IDEA, Android Studio, WebStorm, PyCharm, etc.)
+.idea/
+*.iml
+*.iws
+out/
+.idea_modules/
+
+# Eclipse / STS
+.project
+.classpath
+.settings/
+.loadpath
+.recommenders/
+.metadata/
+bin/
+tmp/
+
+# NetBeans
+nbproject/private/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# Visual Studio / Rider
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Xcode / Apple
+xcuserdata/
+*.xcuserdatad
+*.xcscmblueprint
+*.xccheckout
+*.xcworkspace
+DerivedData/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*.swn
+*.swm
+Session.vim
+.netrwhist
+
+# Emacs
+*~
+\#*\#
+.\#*
+.emacs.desktop
+auto-save-list
+tramp
+*.elc
+
+# Atom
+.atom/
+
+# Other tooling
+.c9/
+*.tmproj
+
+# -----------------------------------------------------------------------------
+# Common tool caches and environment files
+# -----------------------------------------------------------------------------
+.env
+*.env
+.env.*
+.envrc
+.direnv/
+.cache/
+.cache-loader/
+.nyc_output/
+coverage/
+*.log
+logs/
+*.pid
+*.seed
+*.pid.lock
+tmp/
+temp/
+
+# -----------------------------------------------------------------------------
+# Containers / IaC
+# -----------------------------------------------------------------------------
+# Docker (project-level ignore handled by .dockerignore typically)
+.docker/
+docker-compose.override.yml
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+*.tfvars
+*.tfvars.json
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Ansible
+*.retry
+
+# Helm
+charts/**/charts
+
+# Serverless
+.serverless/
+
+# Vagrant
+.vagrant/
+
+# Packer
+packer_cache/
+
+# AWS SAM
+.aws-sam/
+
+# -----------------------------------------------------------------------------
+# Archives / Databases / Data (generic)
+# -----------------------------------------------------------------------------
+*.sqlite
+*.sqlite3
+*.db
+*.mdb
+*.bak
+*.backup
+
+# -----------------------------------------------------------------------------
+# Languages and Frameworks
+# -----------------------------------------------------------------------------
+# Java / JVM
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+*.car
+hs_err_pid*
+replay_pid*
+replay_*.log
+# Build systems
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+.gradle-cache/
+.mvn/timing.properties
+target/
+# Kotlin/Scala
+.kotlinc/
+.metals/
+.bloop/
+.scala-build/
+project/target/
+project/project/
+# SBT
+target/
+project/target/
+project/.bloop/
+project/.metals/
+
+# Android
+local.properties
+.cxx/
+captures/
+
+# .NET / Mono
+bin/
+obj/
+*.userprefs
+*.pdb
+*.pdb.meta
+
+# C / C++
+*.o
+*.obj
+*.so
+*.dll
+*.dylib
+*.exe
+*.lib
+*.a
+*.la
+*.lo
+*.pch
+*.pdb
+*.idb
+*.mod
+*.smod
+*.d
+*.dd
+*.out
+*.app
+*.ipa
+*.map
+*.exp
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake-build-*/
+
+# Rust
+target/
+# Keep Cargo.lock for libraries typically; remove next line if you want to commit it
+# Cargo.lock
+
+# Go
+bin/
+pkg/
+*.test
+*.cover
+coverage.out
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.venv/
+venv/
+ENV/
+env/
+pip-wheel-metadata/
+.tox/
+.coverage
+.coverage.*
+.hypothesis/
+
+# Node / JavaScript / TypeScript
+node_modules/
+bower_components/
+jspm_packages/
+typings/
+.npm/
+.eslintcache
+.yarn/
+.yarn/cache/
+.pnp/
+.pnp.js
+.pnpm-store/
+yarn.lock.bkp
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+bun.lockb
+# Build outputs
+dist/
+build/
+lib/
+.esbuild/
+.rollup.cache/
+.vite/
+vite.config.ts.timestamp-*
+vite.config.js.timestamp-*
+.svelte-kit/
+.next/
+out/
+.vercel/
+.netlify/
+.nuxt/
+.cache/
+.tmp/
+.coverage/
+
+# TypeScript
+*.tsbuildinfo
+
+# React Native
+ios/Pods/
+android/.gradle/
+android/app/build/
+*.keystore
+
+# PHP / Composer
+vendor/
+composer.phar
+# Keep composer.lock typically; remove next line if you want to commit it
+# composer.lock
+
+# Ruby / Bundler / Rails
+.bundle/
+vendor/bundle/
+log/
+tmp/
+coverage/
+.byebug_history
+.yardoc/
+doc/
+.sass-cache/
+
+# Swift / SwiftPM
+.build/
+.swiftpm/
+Package.resolved.bak
+
+# Dart / Flutter
+.dart_tool/
+.packages
+.pub/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.flutter-versions
+
+# Elixir / Erlang
+_build/
+deps/
+erl_crash.dump
+*.ez
+
+# Haskell / Stack / Cabal
+.stack-work/
+dist/
+dist-newstyle/
+cabal.project.local
+cabal.sandbox.config
+
+# R
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+
+# Julia
+*.ji
+.julia/
+Manifest.toml.bak
+
+# LaTeX / TeX
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.nav
+*.out
+*.snm
+*.synctex.gz
+*.toc
+*.vrb
+._minted*
+minted-output/
+
+# MATLAB / Octave
+*.mex*
+*.mat
+*.fig
+*.autosave
+
+# Unity
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Mm]emoryCaptures/
+UserSettings/
+Assets/AssetStoreTools*
+*.unitypackage
+
+# Unreal
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+
+# Data science / Notebooks
+.ipynb_checkpoints/
+*.ipynb_checkpoint
+.ml runs/
+mlruns/
+.wandb/
+
+# -----------------------------------------------------------------------------
+# Project-specific suggestions (uncomment to allow configs in Git)
+# -----------------------------------------------------------------------------
+# Keep VS Code workspace recommendations:
+# !.vscode/extensions.json
+# !.vscode/settings.json
+
+# Keep lockfiles for package managers to ensure reproducible builds:
+# !package-lock.json
+# !yarn.lock
+# !pnpm-lock.yaml
+# !Pipfile.lock
+# !poetry.lock
+# !Cargo.lock
+# !composer.lock
