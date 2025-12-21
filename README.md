@@ -33,11 +33,24 @@ Optional tooling depending on the example:
 
 ## Using the notebooks (.ijnb)
 
-The `.ijnb` files are IDE notebook-style documents. You can:
-- Open them directly in IDEs/editors that support Java notebooks or code cells.
-- Or copy/paste code snippets into a standard `.java` file to compile/run as needed.
+The `.ijnb` files are Java notebooks. VS Code supports Interactive Java Notebooks via the Oracle Java extension:
 
-Tip: If your editor does not natively support `.ijnb`, you can still use them as structured notes and source snippets.
+- Install the extension:
+  - VS Code Marketplace: Oracle "Java" (Oracle.oracle-java)
+    https://marketplace.visualstudio.com/items?itemName=Oracle.oracle-java
+- Prerequisites:
+  - JDK installed and on PATH (JDK 21+ recommended). Check with: `java -version`
+- Usage in VS Code:
+  - Open a `.ijnb` file; code cells show Run buttons in the gutter.
+  - Execute cells, restart the Java notebook kernel, and view outputs inline.
+  - From Command Palette: “Java: Create Java Notebook” to create a new notebook.
+
+References:
+- Inside Java: VS Code Java Notebooks — https://inside.java/2025/12/09/new-vscode-extension/
+- VS Code extension — https://marketplace.visualstudio.com/items?itemName=Oracle.oracle-java
+- Notebook details — https://github.com/oracle/javavscode/wiki/Interactive-Java-Notebooks
+
+If your editor does not support `.ijnb`, you can copy code cells into a `.java` file and run with `javac`/`java`.
 
 ## Running the demos (quick start)
 
@@ -78,4 +91,7 @@ You can prune the `.gitignore` over time to better fit the exact technologies us
 
 ## License
 
-Add your preferred license (e.g., MIT, Apache 2.0) to a `LICENSE` file in the repo root if you plan to share or distribute.
+Licensed under GNU General Public License v2.0 with the Classpath Exception (same as OpenJDK).
+SPDX: GPL-2.0-only WITH Classpath-exception-2.0
+
+See the LICENSE file for the full text.
