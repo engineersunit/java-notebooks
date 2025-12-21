@@ -1,0 +1,154 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 5,
+  "metadata": {
+    "language_info": {
+      "name": "java"
+    }
+  },
+  "cells": [
+    {
+      "id": "f2e0d1a9-5c11-49a9-9b4b-1f5c0f1a5170",
+      "cell_type": "markdown",
+      "source": "#### HTTP/3 client with java.net.http (JEP 517)\n\nThis interactive Java notebook demonstrates opting in to HTTP/3 using the standard `java.net.http.HttpClient` (JDK 26+).\n\nReferences:\n- JEP 517: HTTP/3 for the HTTP Client API — https://openjdk.org/jeps/517\n- Inside Java: VS Code Java Notebooks — https://inside.java/2025/12/09/new-vscode-extension/\n- VS Code extension — https://marketplace.visualstudio.com/items?itemName=Oracle.oracle-java\n- Notebook details — https://github.com/oracle/javavscode/wiki/Interactive-Java-Notebooks\n",
+      "metadata": {
+        "language": "markdown",
+        "id": "f2e0d1a9-5c11-49a9-9b4b-1f5c0f1a5170"
+      }
+    },
+    {
+      "id": "a8a9c4e4-8b3d-4ac2-bc9b-8969b6a2f106",
+      "cell_type": "code",
+      "source": "import java.net.URI;\nimport java.net.http.HttpClient;\nimport java.net.http.HttpRequest;\nimport java.net.http.HttpResponse;\nimport java.util.Arrays;\n\n// Helper for resilient preference of HTTP_3 with fallback on older JDKs\nclass H3Util {\n    static HttpClient.Version tryHttp3Version() {\n        try {\n            // JDK 26+: enum constant exists\n            return HttpClient.Version.valueOf(\"HTTP_3\");\n        } catch (IllegalArgumentException e) {\n            try {\n                return HttpClient.Version.valueOf(\"HTTP_2\");\n            } catch (IllegalArgumentException e2) {\n                return HttpClient.Version.HTTP_1_1;\n            }\n        }\n    }\n}",
+      "metadata": {
+        "language": "java",
+        "id": "a8a9c4e4-8b3d-4ac2-bc9b-8969b6a2f106",
+        "executionSummary": {
+          "executionOrder": 21,
+          "success": true
+        }
+      },
+      "execution_count": 21,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {},
+          "metadata": {},
+          "execution_count": 21
+        }
+      ]
+    },
+    {
+      "id": "0d9f2c89-8f3b-4b6d-9a4e-0d7a34b0e2b8",
+      "cell_type": "code",
+      "source": "// Environment check\nSystem.out.println(\"java.version = \" + System.getProperty(\"java.version\"));\nSystem.out.println(\"Supported HttpClient.Version values = \" + Arrays.toString(HttpClient.Version.values()));",
+      "metadata": {
+        "language": "java",
+        "id": "0d9f2c89-8f3b-4b6d-9a4e-0d7a34b0e2b8",
+        "executionSummary": {
+          "executionOrder": 22,
+          "success": true
+        }
+      },
+      "execution_count": 22,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": "java.version = 25\nSupported HttpClient.Version values = [HTTP_1_1, HTTP_2]\n"
+          },
+          "metadata": {},
+          "execution_count": 22
+        }
+      ]
+    },
+    {
+      "id": "6d5a7e16-2c9a-4e9d-9c97-8d7b1a5d2c11",
+      "cell_type": "markdown",
+      "source": "Set the target URL. Cloudflare is a convenient HTTP/3-capable endpoint.",
+      "metadata": {
+        "language": "markdown",
+        "id": "6d5a7e16-2c9a-4e9d-9c97-8d7b1a5d2c11"
+      }
+    },
+    {
+      "id": "f1a6c2de-9b57-4a1d-9f73-5c1b6e3f3b2a",
+      "cell_type": "code",
+      "source": "String url = \"https://www.cloudflare.com/\";",
+      "metadata": {
+        "language": "java",
+        "id": "f1a6c2de-9b57-4a1d-9f73-5c1b6e3f3b2a",
+        "executionSummary": {
+          "executionOrder": 23,
+          "success": true
+        }
+      },
+      "execution_count": 23,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {},
+          "metadata": {},
+          "execution_count": 23
+        }
+      ]
+    },
+    {
+      "id": "7a9b2e55-19a3-49f5-b4c6-3c4f2a4c6f77",
+      "cell_type": "code",
+      "source": "// Send a request preferring HTTP/3 (falls back if not available)\nvar client = HttpClient.newBuilder().version(H3Util.tryHttp3Version()).build();\nvar request = HttpRequest.newBuilder(URI.create(url)).version(H3Util.tryHttp3Version()).GET().build();\nlong startNanos = System.nanoTime();\nvar response = client.send(request, HttpResponse.BodyHandlers.ofString());\nlong elapsedMs = (System.nanoTime() - startNanos) / 1_000_000;\n\nSystem.out.println(\"URL:      \" + url);\nSystem.out.println(\"Status:   \" + response.statusCode());\nSystem.out.println(\"Protocol: \" + response.version()); // HTTP_3, HTTP_2, or HTTP_1_1\nresponse.headers().firstValue(\"Alt-Svc\").ifPresent(h -> System.out.println(\"Alt-Svc:  \" + h));\nSystem.out.println(\"Time:     \" + elapsedMs + \" ms\");\nSystem.out.println(\"Body length: \" + response.body().length());",
+      "metadata": {
+        "language": "java",
+        "id": "7a9b2e55-19a3-49f5-b4c6-3c4f2a4c6f77",
+        "executionSummary": {
+          "executionOrder": 24,
+          "success": true
+        }
+      },
+      "execution_count": 24,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": "URL:      https://www.cloudflare.com/\nStatus:   200\nProtocol: HTTP_2\nAlt-Svc:  h3=\":443\"; ma=86400\nTime:     642 ms\nBody length: 964326\n"
+          },
+          "metadata": {},
+          "execution_count": 24
+        }
+      ]
+    },
+    {
+      "id": "b3d6a4f2-66f2-4b76-9bfb-1e2c4f0e8a53",
+      "cell_type": "code",
+      "source": "// Optional: async variant\nHttpClient.newBuilder().version(H3Util.tryHttp3Version()).build()\n    .sendAsync(\n        HttpRequest.newBuilder(URI.create(url)).version(H3Util.tryHttp3Version()).GET().build(),\n        HttpResponse.BodyHandlers.discarding()\n    )\n    .thenApply(HttpResponse::version)\n    .thenAccept(v -> System.out.println(\"Async protocol: \" + v))\n    .join();",
+      "metadata": {
+        "language": "java",
+        "id": "b3d6a4f2-66f2-4b76-9bfb-1e2c4f0e8a53",
+        "executionSummary": {
+          "executionOrder": 25,
+          "success": true
+        }
+      },
+      "execution_count": 25,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": "Async protocol: HTTP_2\n"
+          },
+          "metadata": {},
+          "execution_count": 25
+        }
+      ]
+    },
+    {
+      "id": "f3fbc1a2-0fd9-4a2e-961d-8f5e6c6b9a20",
+      "cell_type": "markdown",
+      "source": "Notes & troubleshooting:\n- Requires JDK 26+ for `HTTP_3`; this notebook falls back to `HTTP_2`/`HTTP_1_1` if `HTTP_3` is not present.\n- Your network/proxy/firewall must allow UDP/QUIC (port 443) for HTTP/3; otherwise the client will downgrade automatically.\n- You can vary `url` to point to your own server or other HTTP/3-capable endpoints.\n- Advanced discovery/forcing (e.g., Alt-Svc discovery or HTTP/3-only) is available in JDK 26 via request options; consult the JDK 26 `java.net.http` API docs.\n",
+      "metadata": {
+        "language": "markdown",
+        "id": "f3fbc1a2-0fd9-4a2e-961d-8f5e6c6b9a20"
+      }
+    }
+  ]
+}
