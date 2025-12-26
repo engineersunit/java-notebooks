@@ -24,17 +24,17 @@
         "language": "java",
         "id": "a8a9c4e4-8b3d-4ac2-bc9b-8969b6a2f106",
         "executionSummary": {
-          "executionOrder": 21,
+          "executionOrder": 26,
           "success": true
         }
       },
-      "execution_count": 21,
+      "execution_count": 26,
       "outputs": [
         {
           "output_type": "execute_result",
           "data": {},
           "metadata": {},
-          "execution_count": 21
+          "execution_count": 26
         }
       ]
     },
@@ -46,19 +46,19 @@
         "language": "java",
         "id": "0d9f2c89-8f3b-4b6d-9a4e-0d7a34b0e2b8",
         "executionSummary": {
-          "executionOrder": 22,
+          "executionOrder": 27,
           "success": true
         }
       },
-      "execution_count": 22,
+      "execution_count": 27,
       "outputs": [
         {
           "output_type": "execute_result",
           "data": {
-            "text/plain": "java.version = 25\nSupported HttpClient.Version values = [HTTP_1_1, HTTP_2]\n"
+            "text/plain": "java.version = 26-ea\nSupported HttpClient.Version values = [HTTP_1_1, HTTP_2, HTTP_3]\n"
           },
           "metadata": {},
-          "execution_count": 22
+          "execution_count": 27
         }
       ]
     },
@@ -79,17 +79,17 @@
         "language": "java",
         "id": "f1a6c2de-9b57-4a1d-9f73-5c1b6e3f3b2a",
         "executionSummary": {
-          "executionOrder": 23,
+          "executionOrder": 28,
           "success": true
         }
       },
-      "execution_count": 23,
+      "execution_count": 28,
       "outputs": [
         {
           "output_type": "execute_result",
           "data": {},
           "metadata": {},
-          "execution_count": 23
+          "execution_count": 28
         }
       ]
     },
@@ -101,19 +101,19 @@
         "language": "java",
         "id": "7a9b2e55-19a3-49f5-b4c6-3c4f2a4c6f77",
         "executionSummary": {
-          "executionOrder": 24,
+          "executionOrder": 29,
           "success": true
         }
       },
-      "execution_count": 24,
+      "execution_count": 29,
       "outputs": [
         {
           "output_type": "execute_result",
           "data": {
-            "text/plain": "URL:      https://www.cloudflare.com/\nStatus:   200\nProtocol: HTTP_2\nAlt-Svc:  h3=\":443\"; ma=86400\nTime:     642 ms\nBody length: 964326\n"
+            "text/plain": "URL:      https://www.cloudflare.com/\nStatus:   200\nProtocol: HTTP_2\nAlt-Svc:  h3=\":443\"; ma=86400\nTime:     3627 ms\nBody length: 964345\n"
           },
           "metadata": {},
-          "execution_count": 24
+          "execution_count": 29
         }
       ]
     },
@@ -125,19 +125,19 @@
         "language": "java",
         "id": "b3d6a4f2-66f2-4b76-9bfb-1e2c4f0e8a53",
         "executionSummary": {
-          "executionOrder": 25,
+          "executionOrder": 30,
           "success": true
         }
       },
-      "execution_count": 25,
+      "execution_count": 30,
       "outputs": [
         {
           "output_type": "execute_result",
           "data": {
-            "text/plain": "Async protocol: HTTP_2\n"
+            "text/plain": "Async protocol: HTTP_3\n"
           },
           "metadata": {},
-          "execution_count": 25
+          "execution_count": 30
         }
       ]
     },
