@@ -21,30 +21,70 @@
       "cell_type": "code",
       "source": "class NotebookUtils {\n    static void banner(String title) {\n        String line = \"#\".repeat(Math.max(10, title.length() + 8));\n        IO.println();\n        IO.println(line);\n        IO.println(\"###  \" + title + \"  ###\");\n        IO.println(line);\n    }\n    static void section(String title) {\n        IO.println();\n        IO.println(\"~~ \" + title + \" \".concat(\"~\".repeat(Math.max(10, 60 - title.length()))));\n    }\n    static void kv(String k, Object v) {\n        System.out.printf(\"%-24s : %s%n\", k, String.valueOf(v));\n    }\n    static void hr() { IO.println(\"-\".repeat(80)); }\n}",
       "metadata": {
-        "language": "java"
+        "language": "java",
+        "id": "jep525-utils",
+        "executionSummary": {
+          "executionOrder": 1,
+          "success": true
+        }
       },
-      "execution_count": null,
-      "outputs": []
+      "execution_count": 1,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {},
+          "metadata": {},
+          "execution_count": 1
+        }
+      ]
     },
     {
       "id": "jep525-env",
       "cell_type": "code",
       "source": "NotebookUtils.banner(\"Environment\");\nNotebookUtils.kv(\"java.version\", System.getProperty(\"java.version\"));\nNotebookUtils.kv(\"java.vendor\", System.getProperty(\"java.vendor\"));\nNotebookUtils.kv(\"os.name\", System.getProperty(\"os.name\"));\nboolean hasStructuredScope;\ntry {\n    Class.forName(\"java.util.concurrent.StructuredTaskScope\");\n    hasStructuredScope = true;\n} catch (Throwable t) {\n    hasStructuredScope = false;\n}\nNotebookUtils.kv(\"StructuredTaskScope.present\", hasStructuredScope);\nif (!hasStructuredScope) {\n    IO.println(\"Note: Structured Concurrency is a preview API. To compile/run real samples, use --enable-preview on a supported JDK.\");\n}\nNotebookUtils.hr();",
       "metadata": {
-        "language": "java"
+        "language": "java",
+        "id": "jep525-env",
+        "executionSummary": {
+          "executionOrder": 2,
+          "success": true
+        }
       },
-      "execution_count": null,
-      "outputs": []
+      "execution_count": 2,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": "\n###################\n###  Environment  ###\n###################\njava.version             : 26-ea\njava.vendor              : Oracle Corporation\nos.name                  : Mac OS X\nStructuredTaskScope.present : true\n--------------------------------------------------------------------------------\n"
+          },
+          "metadata": {},
+          "execution_count": 2
+        }
+      ]
     },
     {
       "id": "jep525-sim",
       "cell_type": "code",
       "source": "NotebookUtils.banner(\"Runnable simulation using CompletableFuture + virtual threads\");\nvar vte = java.util.concurrent.Executors.newThreadPerTaskExecutor(java.lang.Thread.ofVirtual().factory());\nlong t0 = System.nanoTime();\nvar f1 = java.util.concurrent.CompletableFuture.supplyAsync(() -> {\n    try { Thread.sleep(300); } catch (InterruptedException ignored) {}\n    return \"alpha\";\n}, vte);\nvar f2 = java.util.concurrent.CompletableFuture.supplyAsync(() -> {\n    try { Thread.sleep(200); } catch (InterruptedException ignored) {}\n    return \"beta\";\n}, vte);\nvar f3 = java.util.concurrent.CompletableFuture.supplyAsync(() -> {\n    try { Thread.sleep(400); } catch (InterruptedException ignored) {}\n    return \"gamma\";\n}, vte);\n\n// Fail-fast race: complete with the first successful result\nvar any = f1.applyToEither(f2, s -> s).applyToEither(f3, s -> s);\nString winner = any.join();\nlong t1 = System.nanoTime();\nNotebookUtils.kv(\"winner\", winner);\nNotebookUtils.kv(\"elapsed.ms\", (t1 - t0)/1_000_000);\n// Cooperative cancellation demo: cancel others after winner\nf1.cancel(true); f2.cancel(true); f3.cancel(true);\nNotebookUtils.hr();\nIO.println(\"This simulates key ideas: scope-like joining of subtasks, fast result, and cancellation of losers.\");\ntry { vte.shutdown(); } catch (Throwable ignored) {}\n",
       "metadata": {
-        "language": "java"
+        "language": "java",
+        "id": "jep525-sim",
+        "executionSummary": {
+          "executionOrder": 3,
+          "success": true
+        }
       },
-      "execution_count": null,
-      "outputs": []
+      "execution_count": 3,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": "\n#####################################################################\n###  Runnable simulation using CompletableFuture + virtual threads  ###\n#####################################################################\nwinner                   : beta\nelapsed.ms               : 273\n--------------------------------------------------------------------------------\nThis simulates key ideas: scope-like joining of subtasks, fast result, and cancellation of losers.\n"
+          },
+          "metadata": {},
+          "execution_count": 3
+        }
+      ]
     },
     {
       "id": "jep525-notes",

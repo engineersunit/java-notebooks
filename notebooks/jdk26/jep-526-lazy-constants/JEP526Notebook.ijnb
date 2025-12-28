@@ -24,17 +24,17 @@
         "language": "java",
         "id": "jep526-utils",
         "executionSummary": {
-          "executionOrder": 1,
-          "success": false
+          "executionOrder": 4,
+          "success": true
         }
       },
-      "execution_count": 1,
+      "execution_count": 4,
       "outputs": [
         {
           "output_type": "execute_result",
           "data": {},
           "metadata": {},
-          "execution_count": 1
+          "execution_count": 4
         }
       ]
     },
@@ -43,10 +43,24 @@
       "cell_type": "code",
       "source": "NotebookUtils.banner(\"Environment\");\nNotebookUtils.kv(\"java.version\", System.getProperty(\"java.version\"));\nNotebookUtils.kv(\"java.vendor\", System.getProperty(\"java.vendor\"));\nNotebookUtils.kv(\"os.name\", System.getProperty(\"os.name\"));\nboolean hasPreviewNote = true; // This JEP is preview; real APIs need --enable-preview\nif (hasPreviewNote) {\n    IO.println(\"Note: Lazy Constants is a preview feature. Real APIs require --enable-preview on a supported JDK.\");\n}\nNotebookUtils.hr();",
       "metadata": {
-        "language": "java"
+        "language": "java",
+        "id": "jep526-env",
+        "executionSummary": {
+          "executionOrder": 5,
+          "success": true
+        }
       },
-      "execution_count": null,
-      "outputs": []
+      "execution_count": 5,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": "\n###################\n###  Environment  ###\n###################\njava.version             : 26-ea\njava.vendor              : Oracle Corporation\nos.name                  : Mac OS X\nNote: Lazy Constants is a preview feature. Real APIs require --enable-preview on a supported JDK.\n--------------------------------------------------------------------------------\n"
+          },
+          "metadata": {},
+          "execution_count": 5
+        }
+      ]
     },
     {
       "id": "jep526-sim",
@@ -56,12 +70,21 @@
         "language": "java",
         "id": "jep526-sim",
         "executionSummary": {
-          "executionOrder": 2,
-          "success": false
+          "executionOrder": 6,
+          "success": true
         }
       },
-      "execution_count": 2,
-      "outputs": []
+      "execution_count": 6,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": "\n############################################################\n###  Simulation: Lazy initialization with verbose tracing  ###\n############################################################\n[init] Computing constant...\n[init] Done in 252 ms\nfirst.value              : CONST-2025-12-28T16:30:06.492229Z\nsecond.value             : CONST-2025-12-28T16:30:06.492229Z\nfirst.call.ms            : 266\nsecond.call.ms           : 9\n--------------------------------------------------------------------------------\nObservation: first access does the work; later accesses are constant-time.\n"
+          },
+          "metadata": {},
+          "execution_count": 6
+        }
+      ]
     },
     {
       "id": "jep526-notes",
