@@ -1,0 +1,62 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 5,
+  "metadata": {
+    "language_info": {
+      "name": "java"
+    }
+  },
+  "cells": [
+    {
+      "id": "jep530-md-1",
+      "cell_type": "markdown",
+      "source": "#### JEP 530 — Primitive Types in Patterns, instanceof, and switch (Fourth Preview)\n\nThis notebook provides runnable environment checks and an explanation of the preview feature. It includes:\n- A non-preview baseline illustrating current approaches\n- Preview examples as code snippets (compile/run with `--enable-preview` on JDK 26)\n\nReferences:\n- JEP 530: https://openjdk.org/jeps/530\n",
+      "metadata": {
+        "language": "markdown",
+        "id": "jep530-md-1"
+      }
+    },
+    {
+      "id": "jep530-utils",
+      "cell_type": "code",
+      "source": "class NotebookUtils {\n    static void banner(String title) {\n        String line = \"#\".repeat(Math.max(10, title.length() + 8));\n        IO.println();\n        IO.println(line);\n        IO.println(\"###  \" + title + \"  ###\");\n        IO.println(line);\n    }\n    static void section(String title) {\n        IO.println();\n        IO.println(\"~~ \" + title + \" \".concat(\"~\".repeat(Math.max(10, 60 - title.length()))));\n    }\n    static void kv(String k, Object v) {\n        System.out.printf(\"%-24s : %s%n\", k, String.valueOf(v));\n    }\n    static void hr() { IO.println(\"-\".repeat(80)); }\n}",
+      "metadata": {
+        "language": "java",
+        "id": "jep530-utils"
+      },
+      "execution_count": 0,
+      "outputs": []
+    },
+    {
+      "id": "jep530-env",
+      "cell_type": "code",
+      "source": "NotebookUtils.banner(\"Environment\");\nNotebookUtils.kv(\"java.version\", System.getProperty(\"java.version\"));\nNotebookUtils.kv(\"java.vendor\", System.getProperty(\"java.vendor\"));\nNotebookUtils.kv(\"os.name\", System.getProperty(\"os.name\"));\nIO.println(\"Note: This feature is in preview for JDK 26. To run preview code, compile & run with --enable-preview.\");\nNotebookUtils.hr();",
+      "metadata": {
+        "language": "java",
+        "id": "jep530-env"
+      },
+      "execution_count": 0,
+      "outputs": []
+    },
+    {
+      "id": "jep530-baseline",
+      "cell_type": "code",
+      "source": "NotebookUtils.banner(\"Non-preview baseline: manual handling of primitives\");\nObject any = java.util.concurrent.ThreadLocalRandom.current().nextBoolean() ? 42 : 3.14159;\nif (any instanceof Integer i) { // pattern for reference types (already GA)\n    NotebookUtils.kv(\"kind\", \"Integer\");\n    NotebookUtils.kv(\"value\", i);\n} else if (any instanceof Double d) {\n    NotebookUtils.kv(\"kind\", \"Double\");\n    NotebookUtils.kv(\"value\", d);\n} else {\n    NotebookUtils.kv(\"kind\", any.getClass().getName());\n    NotebookUtils.kv(\"value\", any);\n}\nNotebookUtils.hr();\nIO.println(\"Preview (JEP 530) extends patterns to primitive types and allows use in instanceof/switch.\");",
+      "metadata": {
+        "language": "java",
+        "id": "jep530-baseline"
+      },
+      "execution_count": 0,
+      "outputs": []
+    },
+    {
+      "id": "jep530-preview-snippets",
+      "cell_type": "markdown",
+      "source": "Preview examples (will not compile in this notebook unless you enable preview). Copy to `Demo.java` and run with `--enable-preview` on JDK 26:\n\n```java\n// javac --enable-preview --release 26 Demo.java\n// java  --enable-preview Demo\npublic class Demo {\n    public static void main(String[] args) {\n        Object o = Math.random() > 0.5 ? 123 : 3.14;\n\n        // instanceof with primitive patterns\n        if (o instanceof int i) {\n            System.out.println(\"int pattern matched: \" + i);\n        } else if (o instanceof double d) {\n            System.out.println(\"double pattern matched: \" + d);\n        }\n\n        // switch with primitive patterns and guards\n        Object v = (System.currentTimeMillis() & 1) == 0 ? 0 : 256;\n        String result = switch (v) {\n            case int i when i == 0 -> \"zero (int)\";\n            case int i when i > 0 && i < 10 -> \"small positive int\";\n            case int i -> \"other int: \" + i;\n            case double d when d == 0.0 -> \"zero (double)\";\n            default -> \"unhandled type: \" + v;\n        };\n        System.out.println(result);\n    }\n}\n```\n\nNotes:\n- Guards (`when`) allow refined control.\n- Primitive patterns improve clarity and reduce boilerplate when working with `Object`-typed values that hold primitives.\n",
+      "metadata": {
+        "language": "markdown",
+        "id": "jep530-preview-snippets"
+      }
+    }
+  ]
+}

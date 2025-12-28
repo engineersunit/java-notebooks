@@ -1,0 +1,99 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 5,
+  "metadata": {
+    "language_info": {
+      "name": "java"
+    }
+  },
+  "cells": [
+    {
+      "id": "jep522-md-1",
+      "cell_type": "markdown",
+      "source": "#### JEP 522 — G1 GC: Improve Throughput by Reducing Synchronization\n\nThis notebook creates GC pressure to let you observe behavior and throughput under G1. Use `-Xlog:gc` when running from CLI for detailed logs and compare across builds.\n\nReferences:\n- JEP 522: https://openjdk.org/jeps/522\n",
+      "metadata": {
+        "language": "markdown",
+        "id": "jep522-md-1"
+      }
+    },
+    {
+      "id": "jep522-utils",
+      "cell_type": "code",
+      "source": "class NotebookUtils {\n    static void banner(String title) {\n        String line = \"#\".repeat(Math.max(10, title.length() + 8));\n        IO.println();\n        IO.println(line);\n        IO.println(\"###  \" + title + \"  ###\");\n        IO.println(line);\n    }\n    static void section(String title) {\n        IO.println();\n        IO.println(\"~~ \" + title + \" \".concat(\"~\".repeat(Math.max(10, 60 - title.length()))));\n    }\n    static void kv(String k, Object v) {\n        System.out.printf(\"%-24s : %s%n\", k, String.valueOf(v));\n    }\n    static void hr() { IO.println(\"-\".repeat(80)); }\n}",
+      "metadata": {
+        "language": "java",
+        "id": "jep522-utils",
+        "executionSummary": {
+          "executionOrder": 13,
+          "success": true
+        }
+      },
+      "execution_count": 13,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {},
+          "metadata": {},
+          "execution_count": 13
+        }
+      ]
+    },
+    {
+      "id": "jep522-env",
+      "cell_type": "code",
+      "source": "NotebookUtils.banner(\"Environment\");\nNotebookUtils.kv(\"java.version\", System.getProperty(\"java.version\"));\nNotebookUtils.kv(\"java.vendor\", System.getProperty(\"java.vendor\"));\nNotebookUtils.kv(\"os.name\", System.getProperty(\"os.name\"));\nNotebookUtils.kv(\"gc\", java.lang.management.ManagementFactory.getGarbageCollectorMXBeans().stream().map(Object::toString).toList());\nRuntime rt = Runtime.getRuntime();\nNotebookUtils.kv(\"heap.total(MB)\", rt.totalMemory() / (1024*1024));\nNotebookUtils.kv(\"heap.max(MB)\", rt.maxMemory() / (1024*1024));\nNotebookUtils.hr();",
+      "metadata": {
+        "language": "java",
+        "id": "jep522-env",
+        "executionSummary": {
+          "executionOrder": 14,
+          "success": true
+        }
+      },
+      "execution_count": 14,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": "\n###################\n###  Environment  ###\n###################\njava.version             : 26-ea\njava.vendor              : Oracle Corporation\nos.name                  : Mac OS X\ngc                       : [com.sun.management.internal.GarbageCollectorExtImpl@2328c243, com.sun.management.internal.GarbageCollectorExtImpl@bebdb06, com.sun.management.internal.GarbageCollectorExtImpl@7a4f0f29]\nheap.total(MB)           : 1096\nheap.max(MB)             : 9216\n--------------------------------------------------------------------------------\n"
+          },
+          "metadata": {},
+          "execution_count": 14
+        }
+      ]
+    },
+    {
+      "id": "jep522-stressor",
+      "cell_type": "code",
+      "source": "NotebookUtils.banner(\"Allocation stressor to trigger GC activity\");\nvar sink = new java.util.ArrayList<byte[]>();\nlong startNs = System.nanoTime();\nint blocks = 1_000;  // Adjust to increase/decrease pressure\nint blockSize = 512_000; // ~0.5 MB per block\nlong bytes = 0;\nfor (int i = 1; i <= blocks; i++) {\n    sink.add(new byte[blockSize]);\n    bytes += blockSize;\n    if (i % 100 == 0) {\n        NotebookUtils.kv(\"allocated.blocks\", i);\n        NotebookUtils.kv(\"allocated.MB\", bytes / (1024*1024));\n        System.gc(); // nudge (no guarantee)\n        NotebookUtils.hr();\n    }\n}\nlong elapsedMs = (System.nanoTime() - startNs) / 1_000_000;\nNotebookUtils.kv(\"elapsed.ms\", elapsedMs);\nNotebookUtils.kv(\"kept.blocks\", sink.size());\nNotebookUtils.kv(\"kept.MB\", bytes / (1024*1024));\nNotebookUtils.hr();\nIO.println(\"Tip: Run from CLI for logs: java -Xlog:gc JEP522Notebook (converted to .java) and compare across builds.\");",
+      "metadata": {
+        "language": "java",
+        "id": "jep522-stressor",
+        "executionSummary": {
+          "executionOrder": 15,
+          "success": true
+        }
+      },
+      "execution_count": 15,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": "\n##################################################\n###  Allocation stressor to trigger GC activity  ###\n##################################################\nallocated.blocks         : 100\nallocated.MB             : 48\n--------------------------------------------------------------------------------\nallocated.blocks         : 200\nallocated.MB             : 97\n--------------------------------------------------------------------------------\nallocated.blocks         : 300\nallocated.MB             : 146\n--------------------------------------------------------------------------------\nallocated.blocks         : 400\nallocated.MB             : 195\n--------------------------------------------------------------------------------\nallocated.blocks         : 500\nallocated.MB             : 244\n--------------------------------------------------------------------------------\nallocated.blocks         : 600\nallocated.MB             : 292\n--------------------------------------------------------------------------------\nallocated.blocks         : 700\nallocated.MB             : 341\n--------------------------------------------------------------------------------\nallocated.blocks         : 800\nallocated.MB             : 390\n--------------------------------------------------------------------------------\nallocated.blocks         : 900\nallocated.MB             : 439\n--------------------------------------------------------------------------------\nallocated.blocks         : 1000\nallocated.MB             : 488\n--------------------------------------------------------------------------------\nelapsed.ms               : 70\nkept.blocks              : 1000\nkept.MB                  : 488\n--------------------------------------------------------------------------------\nTip: Run from CLI for logs: java -Xlog:gc JEP522Notebook (converted to .java) and compare across builds.\n"
+          },
+          "metadata": {},
+          "execution_count": 15
+        }
+      ]
+    },
+    {
+      "id": "jep522-notes",
+      "cell_type": "markdown",
+      "source": "- This stressor is simplistic but sufficient to observe GC cycles and throughput effects.\n- JEP 522 reduces synchronization in G1 to improve throughput; measure with representative workloads and `-Xlog:gc`.\n- You can tweak `blocks` and `blockSize` to vary pressure.\n",
+      "metadata": {
+        "language": "markdown",
+        "id": "jep522-notes"
+      }
+    }
+  ]
+}

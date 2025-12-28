@@ -1,10 +1,10 @@
 # Tech Context — java-notebooks
 
-Last updated: 2025-12-25
+Last updated: 2025-12-28
 
 Stack and Languages
 - Language: Java (plain Java sources and interactive notebooks)
-- JDK: 
+- JDK:
   - Recommended baseline: JDK 21+
   - Some demos target JDK 26 features (HTTP/3 in HttpClient, JEP 500 behavior)
 - Build tooling: none required by default (use `javac`/`java`); optional Maven/Gradle may be added per-demo if helpful
@@ -54,8 +54,41 @@ Conventions and Practices
 - Explicit requirements: each demo README states minimum JDK version and necessary flags
 - Portability: commands are POSIX-friendly; note platform-specific deviations where applicable
 - Isolation: each demo folder is self-contained; notebooks are exploratory and optional
+- Output abstraction: demos should use `IO.println(...)` instead of `System.out.println(...)`
+  - Do not alter `System.out.print` or `System.out.printf` usages
+  - Preserve occurrences in strings, text blocks (`""" ... """`), char literals, and comments (tutorial snippets)
+
+Maintenance Scripts
+- Java sources codemod: `scripts/refactor-java-println.js`
+  - Purpose: replace `System.out.println(...)` with `IO.println(...)` across `.java` files
+  - Behavior:
+    - Skips replacements inside string literals, text blocks, char literals, and comments
+    - Skips editing `IO.java` to avoid recursive rewrites
+    - Creates a minimal per-folder `IO.java` if a directory had modifications
+  - Usage:
+    - Dry run: `node scripts/refactor-java-println.js --check .`
+    - Apply:   `node scripts/refactor-java-println.js .`
+- Notebook codemod: `scripts/refactor-println.js`
+  - Purpose: replace `System.out.println(...)` with `IO.println(...)` in `.ijnb` code cells only
+  - Usage examples:
+    - Dry run: `node scripts/refactor-println.js --check notebooks`
+    - Apply:   `node scripts/refactor-println.js notebooks`
+
+Requirements for Scripts
+- Node.js available on PATH to run the maintenance scripts
+- Run dry-run (`--check`) first to review changes, then apply
+
+IO Helper Class
+- Per-demo duplication for independence (no cross-folder dependencies)
+- Minimal implementation:
+  - `public static void println()`
+  - `public static void println(Object o)`
+- Lives alongside demo sources in each affected folder
 
 References
 - Root README.md for prerequisites, notebook usage, and quick starts
 - Per-demo README.md files for focused instructions and flags
 - VS Code Oracle Java extension documentation and Inside Java resources
+- Scripts:
+  - `scripts/refactor-java-println.js` (Java sources)
+  - `scripts/refactor-println.js` (notebook code cells)

@@ -1,0 +1,95 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 5,
+  "metadata": {
+    "language_info": {
+      "name": "java"
+    }
+  },
+  "cells": [
+    {
+      "id": "jep500-md-1",
+      "cell_type": "markdown",
+      "source": "#### JEP 500 — Prepare to Make Final Mean Final\n\nDemonstrate behavior around reflective mutation of `final` fields and related runtime flags in JDK 26.\n\nReferences:\n- JEP 500: https://openjdk.org/jeps/500\n- JFR event `jdk.FinalFieldMutation` (diagnostics)\n",
+      "metadata": {
+        "language": "markdown",
+        "id": "jep500-md-1"
+      }
+    },
+    {
+      "id": "jep500-code-utils",
+      "cell_type": "code",
+      "source": "class NotebookUtils {\n    static void banner(String title) {\n        String line = \"#\".repeat(Math.max(10, title.length() + 8));\n        IO.println();\n        IO.println(line);\n        IO.println(\"###  \" + title + \"  ###\");\n        IO.println(line);\n    }\n    static void section(String title) {\n        IO.println();\n        IO.println(\"~~ \" + title + \" \".concat(\"~\".repeat(Math.max(10, 60 - title.length()))));\n    }\n    static void kv(String k, Object v) {\n        System.out.printf(\"%-24s : %s%n\", k, String.valueOf(v));\n    }\n    static void hr() { IO.println(\"-\".repeat(80)); }\n}",
+      "metadata": {
+        "language": "java",
+        "id": "jep500-code-utils",
+        "executionSummary": {
+          "executionOrder": 1,
+          "success": false
+        }
+      },
+      "execution_count": 1,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {},
+          "metadata": {},
+          "execution_count": 1
+        }
+      ]
+    },
+    {
+      "id": "jep500-env",
+      "cell_type": "code",
+      "source": "NotebookUtils.banner(\"Environment\");\nNotebookUtils.kv(\"java.version\", System.getProperty(\"java.version\"));\nNotebookUtils.kv(\"java.vendor\", System.getProperty(\"java.vendor\"));\nNotebookUtils.kv(\"os.name\", System.getProperty(\"os.name\"));\nNotebookUtils.hr();",
+      "metadata": {
+        "language": "java",
+        "id": "jep500-env",
+        "executionSummary": {
+          "executionOrder": 2,
+          "success": false
+        }
+      },
+      "execution_count": 2,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {},
+          "metadata": {},
+          "execution_count": 2
+        }
+      ]
+    },
+    {
+      "id": "jep500-demo",
+      "cell_type": "code",
+      "source": "import java.lang.reflect.*;\n\nNotebookUtils.banner(\"Attempt to mutate a final field via reflection\");\n\nfinal class Box {\n    final int value;\n    Box() { value = 2025; }\n    @Override public String toString() { return \"Box[value=\" + value + \"]\"; }\n}\n\nvar b = new Box();\nIO.println(\"Before: \" + b);\ntry {\n    Field f = Box.class.getDeclaredField(\"value\");\n    f.setAccessible(true); // may still not permit final mutation under JEP 500 controls\n    f.setInt(b, 2026);\n    IO.println(\"After:  \" + b + \" (mutation appeared to succeed)\");\n} catch (Throwable t) {\n    IO.println(\"Mutation blocked: \" + t.getClass().getSimpleName() + \": \" + t.getMessage());\n    IO.println(\"Hint: On JDK 26, final-field mutation can be controlled. Try:\\n  --enable-final-field-mutation=ALL-UNNAMED\\n  --illegal-final-field-mutation=debug|warn|deny\\nYou may also need --add-opens for deep reflection across modules.\\n\");\n}\nNotebookUtils.hr();",
+      "metadata": {
+        "language": "java",
+        "id": "jep500-demo",
+        "executionSummary": {
+          "executionOrder": 3,
+          "success": false
+        }
+      },
+      "execution_count": 3,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {},
+          "metadata": {},
+          "execution_count": 3
+        }
+      ]
+    },
+    {
+      "id": "jep500-notes",
+      "cell_type": "markdown",
+      "source": "- Default in JDK 26 is `warn`; future may move toward `deny`.\n- Use `--illegal-final-field-mutation=debug` for stack traces; record JFR event `jdk.FinalFieldMutation` if desired.\n- See also standalone demo in `jep500-demo/` for CLI runs with flags.\n",
+      "metadata": {
+        "language": "markdown",
+        "id": "jep500-notes"
+      }
+    }
+  ]
+}

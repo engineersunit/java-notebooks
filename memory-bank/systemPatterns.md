@@ -1,6 +1,6 @@
 # System Patterns — java-notebooks
 
-Last updated: 2025-12-25
+Last updated: 2025-12-28
 
 Architecture Overview
 - Repository is intentionally flat and simple:
@@ -30,6 +30,17 @@ Key Technical Decisions and Patterns
    - Notebooks are exploratory and do not impose structure on demos.
    - Cross-links are documentation-level only (no Java code dependencies across demos).
 
+5) Output abstraction via IO.println
+   - All demos should use a tiny helper class `IO` to write output: `IO.println(...)`.
+   - `System.out.println(...)` is refactored to `IO.println(...)` via codemod to keep a consistent output abstraction.
+   - Intentional limitations:
+     - Do not alter `System.out.print` or `System.out.printf` (format semantics and partial-line output are preserved).
+     - Preserve tutorial snippets shown inside String literals, text blocks (`""" ... """`), char literals, and comments.
+   - Per-demo duplication:
+     - Each affected demo folder contains its own `IO.java` to avoid cross-folder dependencies and keep examples self-contained.
+   - Safety:
+     - The codemod script skips editing `IO.java` itself to avoid recursive rewrites.
+
 Component Relationships
 - Notebooks (.ijnb)
   - Interactive, exploratory code and notes.
@@ -40,6 +51,11 @@ Component Relationships
     - Shows negotiated protocol and fallback behavior.
   - jep500-demo/
     - Demonstrates effects of JEP 500 (final-field mutation) and relevant JVM options.
+- IO helper
+  - A minimal `IO.java` with:
+    - `public static void println()` and
+    - `public static void println(Object)`
+  - Lives in each demo directory that emits output and was refactored.
 
 Critical Implementation Paths
 - HTTP/3 path (http3-demo)
@@ -53,6 +69,10 @@ Critical Implementation Paths
   - Uses CLI options to control behavior and enable/deny scenarios.
   - Diagnostics via `--illegal-final-field-mutation=debug` and JFR event recording.
 
+- Output/logging path (IO.println)
+  - All println-style output goes through `IO.println`.
+  - Codemod maintains this convention across .java sources while preserving literals/comments.
+
 Conventions
 - Documentation co-located with code:
   - Each demo has a README.md with purpose, prerequisites, build/run steps, and flags.
@@ -60,8 +80,13 @@ Conventions
   - JDK 21+ generally recommended; specific demos may require JDK 26.
 - Portability:
   - Keep commands POSIX-friendly; note platform-specific adjustments if needed.
+- Refactor scripts:
+  - `scripts/refactor-java-println.js` — codemod for `.java` files; skips string/text-block/comment contexts and `IO.java`.
+  - `scripts/refactor-println.js` — codemod for `.ijnb` notebook code cells.
 
 Cross-References
 - Root README.md — repository overview, prerequisites, notebook usage, and demo quick starts.
 - http3-demo/README.md — HTTP/3 behavior, discovery/forcing notes, troubleshooting steps.
 - jep500-demo/README.md — JEP 500 semantics, flags, diagnostics, and migration guidance.
+- scripts/refactor-java-println.js — repository-wide println codemod for Java sources.
+- scripts/refactor-println.js — notebook (.ijnb) code-cell println codemod.

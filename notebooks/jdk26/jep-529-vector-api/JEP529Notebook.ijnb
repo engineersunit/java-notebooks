@@ -1,0 +1,62 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 5,
+  "metadata": {
+    "language_info": {
+      "name": "java"
+    }
+  },
+  "cells": [
+    {
+      "id": "jep529-md-1",
+      "cell_type": "markdown",
+      "source": "#### JEP 529 — Vector API (Eleventh Incubator)\n\nThis notebook outlines a simple vectorized addition demo and detects whether the incubator module is available.\nIf available, run with the `jdk.incubator.vector` module to execute real SIMD operations; otherwise we provide guidance and a scalar fallback.\n\nReferences:\n- JEP 529: https://openjdk.org/jeps/529\n- Module: `jdk.incubator.vector`\n",
+      "metadata": {
+        "language": "markdown",
+        "id": "jep529-md-1"
+      }
+    },
+    {
+      "id": "jep529-utils",
+      "cell_type": "code",
+      "source": "class NotebookUtils {\n    static void banner(String title) {\n        String line = \"#\".repeat(Math.max(10, title.length() + 8));\n        IO.println();\n        IO.println(line);\n        IO.println(\"###  \" + title + \"  ###\");\n        IO.println(line);\n    }\n    static void section(String title) {\n        IO.println();\n        IO.println(\"~~ \" + title + \" \".concat(\"~\".repeat(Math.max(10, 60 - title.length()))));\n    }\n    static void kv(String k, Object v) {\n        System.out.printf(\"%-24s : %s%n\", k, String.valueOf(v));\n    }\n    static void hr() { IO.println(\"-\".repeat(80)); }\n}",
+      "metadata": {
+        "language": "java",
+        "id": "jep529-utils"
+      },
+      "execution_count": 0,
+      "outputs": []
+    },
+    {
+      "id": "jep529-env",
+      "cell_type": "code",
+      "source": "NotebookUtils.banner(\"Environment & module detection\");\nNotebookUtils.kv(\"java.version\", System.getProperty(\"java.version\"));\nNotebookUtils.kv(\"java.vendor\", System.getProperty(\"java.vendor\"));\nNotebookUtils.kv(\"os.name\", System.getProperty(\"os.name\"));\nboolean vectorAvailable;\ntry {\n    Class.forName(\"jdk.incubator.vector.IntVector\");\n    vectorAvailable = true;\n} catch (Throwable t) {\n    vectorAvailable = false;\n}\nNotebookUtils.kv(\"jdk.incubator.vector.present\", vectorAvailable);\nif (!vectorAvailable) {\n    IO.println(\"To enable: compile/run with --add-modules jdk.incubator.vector\");\n    IO.println(\"\"\"\nCLI example:\n  javac --add-modules jdk.incubator.vector Demo.java\n  java  --add-modules jdk.incubator.vector Demo\n\"\"\");\n}\nNotebookUtils.hr();",
+      "metadata": {
+        "language": "java",
+        "id": "jep529-env"
+      },
+      "execution_count": 0,
+      "outputs": []
+    },
+    {
+      "id": "jep529-fallback",
+      "cell_type": "code",
+      "source": "NotebookUtils.banner(\"Scalar fallback (baseline)\");\nint n = 1_000_00; // 100k\nint[] a = new int[n];\nint[] b = new int[n];\nint[] c = new int[n];\nfor (int i = 0; i < n; i++) { a[i] = i; b[i] = n - i; }\nlong t0 = System.nanoTime();\nfor (int i = 0; i < n; i++) c[i] = a[i] + b[i];\nlong ms = (System.nanoTime() - t0) / 1_000_000;\nNotebookUtils.kv(\"length\", n);\nNotebookUtils.kv(\"scalar.add.ms\", ms);\nNotebookUtils.kv(\"sample.c[12345]\", c[12_345]);\nNotebookUtils.hr();\nIO.println(\"Use this as a baseline; rerun with vector module enabled to compare.\");",
+      "metadata": {
+        "language": "java",
+        "id": "jep529-fallback"
+      },
+      "execution_count": 0,
+      "outputs": []
+    },
+    {
+      "id": "jep529-vector-snippet",
+      "cell_type": "markdown",
+      "source": "If the incubator module is available, you can use code like this (requires `--add-modules jdk.incubator.vector`):\n\n```java\nimport jdk.incubator.vector.*;\n\nint[] a = ...; int[] b = ...; int[] c = new int[a.length];\nVectorSpecies<Integer> SPEC = IntVector.SPECIES_PREFERRED;\nint i = 0;\nfor (; i + SPEC.length() <= a.length; i += SPEC.length()) {\n    var va = IntVector.fromArray(SPEC, a, i);\n    var vb = IntVector.fromArray(SPEC, b, i);\n    var vc = va.add(vb);\n    vc.intoArray(c, i);\n}\nfor (; i < a.length; i++) c[i] = a[i] + b[i]; // tail\n```\n\nRun from CLI:\n- `javac --add-modules jdk.incubator.vector Demo.java`\n- `java  --add-modules jdk.incubator.vector Demo`\n",
+      "metadata": {
+        "language": "markdown",
+        "id": "jep529-vector-snippet"
+      }
+    }
+  ]
+}

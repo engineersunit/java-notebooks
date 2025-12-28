@@ -1,48 +1,51 @@
 # Active Context — java-notebooks
 
-Last updated: 2025-12-25
+Last updated: 2025-12-28
 
 Current Focus
-- Initialize the Cline Memory Bank for this repository.
-- Establish core documentation to preserve context across sessions.
+- Refactor all Java demo sources to use IO.println instead of System.out.println.
+- Maintain codemod scripts to keep demos and notebooks consistent.
+- Keep Memory Bank up to date so future sessions retain full context.
 
 Recent Changes
-- Created memory-bank/ directory and initialized:
-  - projectbrief.md — repository scope, structure, goals.
-  - productContext.md — purpose, user goals, value proposition, constraints.
-- No code changes to demos or notebooks.
+- Implemented a repository-wide refactor:
+  - Added scripts/refactor-java-println.js to replace System.out.println(...) with IO.println(...) in .java files, skipping occurrences inside string literals, text blocks ("""), char literals, and comments.
+  - Auto-created an IO.java helper in each affected demo directory with:
+    - public static void println()
+    - public static void println(Object)
+  - Left System.out.print and System.out.printf untouched.
+  - Verified by search that remaining System.out.println occurrences are only inside newly created IO.java files (by design) or preserved within string/text-block samples in demos (e.g., sample code shown to users).
+- Safety improvement:
+  - Patched the refactor script to skip modifying any IO.java file, preventing recursive edits.
+  - Re-ran dry-run to confirm 0 files would be changed post-refactor.
+- Spot compilation:
+  - Compiled representative demos (e.g., jep504-demo/RemoveAppletApiDemo.java, jep500-demo/C.java) to ensure no regressions.
 
 Next Steps
-- Author remaining core memory bank files:
-  - systemPatterns.md — architecture, patterns, relationships.
-  - techContext.md — stack, tools, versions, setup.
-  - progress.md — status, known issues, roadmap.
-- Add project-specific .clinerules with the official Cline Memory Bank instructions to enforce reading memory-bank files at task start.
-- Optional follow-ups:
-  - Add per-demo quick-glance snippets (commands, flags) into progress.md.
-  - Expand systemPatterns.md with cross-file relationships as more demos are added.
+- Decide whether to:
+  - Keep per-demo IO.java helpers (current: maximizes independence, zero cross-folder dependencies), or
+  - Consolidate into a shared IO class in a common package (would require package structure and import updates).
+- Optional:
+  - Add a lightweight CI/lint step to fail builds if System.out.println is reintroduced outside IO.java.
+  - Extend codemod coverage to notebooks (.ijnb) via existing scripts/refactor-println.js (code cells) in routine maintenance.
+  - Add a pre-commit hook that runs the dry-run and warns on violations.
 
 Active Decisions and Considerations
-- Keep demos minimal (single-file or tiny folders) with per-demo README instructions.
-- Favor dynamic capability detection where possible (e.g., HTTP/3 version detection) to support multiple JDK versions.
-- Document runtime constraints (network UDP/QUIC for HTTP/3; JEP 500 flags for final-field mutation).
-- Prefer plain javac/java execution paths; only introduce build tooling when clearly beneficial for a demo.
+- Demos remain self-contained; per-folder IO.java avoids inter-folder imports and package coupling.
+- Purposely do not alter System.out.print / printf to avoid impacting formatted output or partial-line logging patterns.
+- Preserve literal examples: strings and text blocks that show tutorial code should not be rewritten.
 
 Important Patterns and Preferences
-- Notebooks (.ijnb) for interactive exploration using the Oracle Java VS Code extension.
-- Each demo:
-  - States minimum JDK version (some target JDK 26 features).
-  - Lists exact compile/run commands and flags.
-  - Remains self-contained.
-- Documentation emphasizes “runnable first,” then links to official references.
+- IO.println abstraction for output in demos, implemented via a tiny static helper class.
+- Codemod-first maintenance:
+  - scripts/refactor-java-println.js for .java sources
+  - scripts/refactor-println.js for .ijnb notebooks (code cells only)
+- Runnable-first: demos remain plain javac/java without external build tooling by default.
 
 Learnings and Insights
-- HTTP/3 demo (JEP 517-like usage) should prefer HTTP/3 but gracefully fall back when unavailable due to network/environment.
-- JEP 500 behavior (final-field mutation):
-  - Warns by default in JDK 26; future default likely deny.
-  - Requires explicit enable flags to allow mutation; --add-opens may still be needed for deep reflection.
-- Editors without .ijnb support can copy cells into .java files to run.
+- Text blocks and embedded tutorial strings are common in these demos; a tokenizer-based replacement (not raw regex) avoids corrupting sample code.
+- Skipping IO.java in codemods prevents refactoring churn and retains the helper’s canonical form.
 
 Open Questions / Future Clarifications
-- Add CI matrix (optional) to validate demos across JDK versions.
-- Consider minimal Gradle/Maven samples for selected demos (only if instructional value outweighs complexity).
+- Should we introduce a common package (e.g., util.IO) and a minimal classpath setup to share IO across demos, or keep per-folder duplication for maximal independence?
+- Add CI targets for JDK 21 and JDK 26 to validate compilation and basic runs for representative demos?

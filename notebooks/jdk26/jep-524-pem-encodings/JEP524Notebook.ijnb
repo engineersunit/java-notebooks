@@ -1,0 +1,99 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 5,
+  "metadata": {
+    "language_info": {
+      "name": "java"
+    }
+  },
+  "cells": [
+    {
+      "id": "jep524-md-1",
+      "cell_type": "markdown",
+      "source": "#### JEP 524 — PEM Encodings of Cryptographic Objects (Second Preview)\n\nThis notebook demonstrates parsing a PEM-encoded public key and converting it to a usable `PublicKey` instance. JEP 524 aims to make PEM encodings first-class in the JDK crypto APIs.\n\nReferences:\n- JEP 524: https://openjdk.org/jeps/524\n",
+      "metadata": {
+        "language": "markdown",
+        "id": "jep524-md-1"
+      }
+    },
+    {
+      "id": "jep524-utils",
+      "cell_type": "code",
+      "source": "class NotebookUtils {\n    static void banner(String title) {\n        String line = \"#\".repeat(Math.max(10, title.length() + 8));\n        IO.println();\n        IO.println(line);\n        IO.println(\"###  \" + title + \"  ###\");\n        IO.println(line);\n    }\n    static void section(String title) {\n        IO.println();\n        IO.println(\"~~ \" + title + \" \".concat(\"~\".repeat(Math.max(10, 60 - title.length()))));\n    }\n    static void kv(String k, Object v) {\n        System.out.printf(\"%-24s : %s%n\", k, String.valueOf(v));\n    }\n    static void hr() { IO.println(\"-\".repeat(80)); }\n}",
+      "metadata": {
+        "language": "java",
+        "id": "jep524-utils",
+        "executionSummary": {
+          "executionOrder": 20,
+          "success": true
+        }
+      },
+      "execution_count": 20,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {},
+          "metadata": {},
+          "execution_count": 20
+        }
+      ]
+    },
+    {
+      "id": "jep524-env",
+      "cell_type": "code",
+      "source": "NotebookUtils.banner(\"Environment\");\nNotebookUtils.kv(\"java.version\", System.getProperty(\"java.version\"));\nNotebookUtils.kv(\"java.vendor\", System.getProperty(\"java.vendor\"));\nNotebookUtils.kv(\"os.name\", System.getProperty(\"os.name\"));\nNotebookUtils.hr();",
+      "metadata": {
+        "language": "java",
+        "id": "jep524-env",
+        "executionSummary": {
+          "executionOrder": 21,
+          "success": true
+        }
+      },
+      "execution_count": 21,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": "\n###################\n###  Environment  ###\n###################\njava.version             : 26-ea\njava.vendor              : Oracle Corporation\nos.name                  : Mac OS X\n--------------------------------------------------------------------------------\n"
+          },
+          "metadata": {},
+          "execution_count": 21
+        }
+      ]
+    },
+    {
+      "id": "jep524-pem-demo",
+      "cell_type": "code",
+      "source": "NotebookUtils.banner(\"Parse PEM-encoded RSA Public Key\");\nString SAMPLE_PEM = \"\"\"\n-----BEGIN PUBLIC KEY-----\nMFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAN9u0edPFsKnz03Wx/ju0RduCMsZ/HXX\nK5vCk1vZ1tcHTid3e8DqRLVQjaxAg/P6nxsVXni4eWh05rq6ArlTc98CAwEAAQ==\n-----END PUBLIC KEY-----\n\"\"\";\nString base64 = SAMPLE_PEM\n        .replace(\"-----BEGIN PUBLIC KEY-----\", \"\")\n        .replace(\"-----END PUBLIC KEY-----\", \"\")\n        .replaceAll(\"\\\\s\", \"\");\njava.security.PublicKey pubKey = null;\ntry {\n    byte[] der = java.util.Base64.getDecoder().decode(base64.getBytes(java.nio.charset.StandardCharsets.US_ASCII));\n    var spec = new java.security.spec.X509EncodedKeySpec(der);\n    var keyFactory = java.security.KeyFactory.getInstance(\"RSA\");\n    pubKey = keyFactory.generatePublic(spec);\n} catch (Throwable t) {\n    IO.println(\"Decode error: \" + t.getClass().getSimpleName() + \": \" + t.getMessage());\n}\nif (pubKey != null) {\n    NotebookUtils.kv(\"algorithm\", pubKey.getAlgorithm());\n    NotebookUtils.kv(\"format\", pubKey.getFormat());\n    NotebookUtils.kv(\"encoded.length\", pubKey.getEncoded().length);\n}\nNotebookUtils.hr();\nIO.println(\"Note: JEP 524 adds first-class PEM encodings across crypto APIs. Exact APIs are evolving in preview — consult the JEP for current surface.\");",
+      "metadata": {
+        "language": "java",
+        "id": "jep524-pem-demo",
+        "executionSummary": {
+          "executionOrder": 22,
+          "success": true
+        }
+      },
+      "execution_count": 22,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": "\n########################################\n###  Parse PEM-encoded RSA Public Key  ###\n########################################\nalgorithm                : RSA\nformat                   : X.509\nencoded.length           : 94\n--------------------------------------------------------------------------------\nNote: JEP 524 adds first-class PEM encodings across crypto APIs. Exact APIs are evolving in preview — consult the JEP for current surface.\n"
+          },
+          "metadata": {},
+          "execution_count": 22
+        }
+      ]
+    },
+    {
+      "id": "jep524-notes",
+      "cell_type": "markdown",
+      "source": "- This example decodes a PEM public key and constructs a `PublicKey` via `KeyFactory`.\n- JEP 524 aims to make PEM handling more direct across Java crypto APIs (preview).\n- For private keys and certificates, use the corresponding specs (`PKCS8EncodedKeySpec`, `CertificateFactory`), or the new preview APIs as per the JEP.\n",
+      "metadata": {
+        "language": "markdown",
+        "id": "jep524-notes"
+      }
+    }
+  ]
+}

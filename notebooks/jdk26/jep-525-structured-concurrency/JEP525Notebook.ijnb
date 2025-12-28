@@ -1,0 +1,59 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 5,
+  "metadata": {
+    "language_info": {
+      "name": "java"
+    }
+  },
+  "cells": [
+    {
+      "id": "jep525-md-1",
+      "cell_type": "markdown",
+      "source": "#### JEP 525 — Structured Concurrency (Sixth Preview)\n\nThis notebook explores the concept of structured concurrency and shows a runnable approximation using standard APIs (CompletableFuture / virtual threads).\nIt also detects whether `java.util.concurrent.StructuredTaskScope` is present (preview) and prints guidance on enabling preview features.\n\nReferences:\n- JEP 525: https://openjdk.org/jeps/525\n- Virtual threads (Loom): https://openjdk.org/jeps/444\n",
+      "metadata": {
+        "language": "markdown",
+        "id": "jep525-md-1"
+      }
+    },
+    {
+      "id": "jep525-utils",
+      "cell_type": "code",
+      "source": "class NotebookUtils {\n    static void banner(String title) {\n        String line = \"#\".repeat(Math.max(10, title.length() + 8));\n        IO.println();\n        IO.println(line);\n        IO.println(\"###  \" + title + \"  ###\");\n        IO.println(line);\n    }\n    static void section(String title) {\n        IO.println();\n        IO.println(\"~~ \" + title + \" \".concat(\"~\".repeat(Math.max(10, 60 - title.length()))));\n    }\n    static void kv(String k, Object v) {\n        System.out.printf(\"%-24s : %s%n\", k, String.valueOf(v));\n    }\n    static void hr() { IO.println(\"-\".repeat(80)); }\n}",
+      "metadata": {
+        "language": "java"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "id": "jep525-env",
+      "cell_type": "code",
+      "source": "NotebookUtils.banner(\"Environment\");\nNotebookUtils.kv(\"java.version\", System.getProperty(\"java.version\"));\nNotebookUtils.kv(\"java.vendor\", System.getProperty(\"java.vendor\"));\nNotebookUtils.kv(\"os.name\", System.getProperty(\"os.name\"));\nboolean hasStructuredScope;\ntry {\n    Class.forName(\"java.util.concurrent.StructuredTaskScope\");\n    hasStructuredScope = true;\n} catch (Throwable t) {\n    hasStructuredScope = false;\n}\nNotebookUtils.kv(\"StructuredTaskScope.present\", hasStructuredScope);\nif (!hasStructuredScope) {\n    IO.println(\"Note: Structured Concurrency is a preview API. To compile/run real samples, use --enable-preview on a supported JDK.\");\n}\nNotebookUtils.hr();",
+      "metadata": {
+        "language": "java"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "id": "jep525-sim",
+      "cell_type": "code",
+      "source": "NotebookUtils.banner(\"Runnable simulation using CompletableFuture + virtual threads\");\nvar vte = java.util.concurrent.Executors.newThreadPerTaskExecutor(java.lang.Thread.ofVirtual().factory());\nlong t0 = System.nanoTime();\nvar f1 = java.util.concurrent.CompletableFuture.supplyAsync(() -> {\n    try { Thread.sleep(300); } catch (InterruptedException ignored) {}\n    return \"alpha\";\n}, vte);\nvar f2 = java.util.concurrent.CompletableFuture.supplyAsync(() -> {\n    try { Thread.sleep(200); } catch (InterruptedException ignored) {}\n    return \"beta\";\n}, vte);\nvar f3 = java.util.concurrent.CompletableFuture.supplyAsync(() -> {\n    try { Thread.sleep(400); } catch (InterruptedException ignored) {}\n    return \"gamma\";\n}, vte);\n\n// Fail-fast race: complete with the first successful result\nvar any = f1.applyToEither(f2, s -> s).applyToEither(f3, s -> s);\nString winner = any.join();\nlong t1 = System.nanoTime();\nNotebookUtils.kv(\"winner\", winner);\nNotebookUtils.kv(\"elapsed.ms\", (t1 - t0)/1_000_000);\n// Cooperative cancellation demo: cancel others after winner\nf1.cancel(true); f2.cancel(true); f3.cancel(true);\nNotebookUtils.hr();\nIO.println(\"This simulates key ideas: scope-like joining of subtasks, fast result, and cancellation of losers.\");\ntry { vte.shutdown(); } catch (Throwable ignored) {}\n",
+      "metadata": {
+        "language": "java"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "id": "jep525-notes",
+      "cell_type": "markdown",
+      "source": "- The preview API `StructuredTaskScope` provides a first-class, readable abstraction for managing lifetimes of related tasks.\n- To run real samples with `StructuredTaskScope`, compile and run with `--enable-preview` on a supported JDK.\n- Example (CLI):\n  - `javac --enable-preview --release 26 Demo.java`\n  - `java --enable-preview Demo`\n- In this notebook we used a runnable simulation that captures behavior patterns (join, fail-fast, cancellation) without preview APIs.\n",
+      "metadata": {
+        "language": "markdown",
+        "id": "jep525-notes"
+      }
+    }
+  ]
+}

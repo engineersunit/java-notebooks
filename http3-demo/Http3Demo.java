@@ -30,15 +30,15 @@ public class Http3Demo {
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         long elapsedMs = (System.nanoTime() - startNanos) / 1_000_000;
 
-        System.out.println("URL:      " + url);
-        System.out.println("Status:   " + response.statusCode());
-        System.out.println("Protocol: " + response.version()); // HTTP_3, HTTP_2, or HTTP_1_1
-        System.out.println("Time:     " + elapsedMs + " ms");
+        IO.println("URL:      " + url);
+        IO.println("Status:   " + response.statusCode());
+        IO.println("Protocol: " + response.version()); // HTTP_3, HTTP_2, or HTTP_1_1
+        IO.println("Time:     " + elapsedMs + " ms");
 
         // Helpful header to observe discovery/downgrade behavior
-        response.headers().firstValue("Alt-Svc").ifPresent(h -> System.out.println("Alt-Svc:  " + h));
+        response.headers().firstValue("Alt-Svc").ifPresent(h -> IO.println("Alt-Svc:  " + h));
 
-        System.out.println("Body length: " + response.body().length());
+        IO.println("Body length: " + response.body().length());
     }
 
     private static HttpClient.Version tryHttp3Version() {
