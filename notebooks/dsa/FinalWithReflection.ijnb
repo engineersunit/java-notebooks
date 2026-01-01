@@ -1,0 +1,185 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 5,
+  "metadata": {
+    "language_info": {
+      "name": "java"
+    }
+  },
+  "cells": [
+    {
+      "id": "23e010d6-bc74-4e8f-b7d5-c0292c5ab0cb",
+      "cell_type": "markdown",
+      "source": "### Utils for print values",
+      "metadata": {
+        "language": "markdown",
+        "id": "23e010d6-bc74-4e8f-b7d5-c0292c5ab0cb"
+      }
+    },
+    {
+      "id": "f073e182-5691-4f0b-90f0-ef3661a98e10",
+      "cell_type": "code",
+      "source": "class NotebookUtils {\n    static void banner(String title) {\n        String line = \"#\".repeat(Math.max(10, title.length() + 10));\n        IO.println();\n        IO.println(line);\n        IO.println(\"###  \" + title + \"  ###\");\n        IO.println(line);\n    }\n    static void section(String title) {\n        IO.println();\n        IO.println(\"~~ \" + title + \" \".concat(\"~\".repeat(Math.max(10, 60 - title.length()))));\n    }\n    static void kv(String k, Object v) {\n        System.out.printf(\"%-24s : %s%n\", k, String.valueOf(v));\n    }\n    static void hr() { IO.println(\"-\".repeat(80)); }\n}",
+      "metadata": {
+        "language": "java",
+        "id": "f073e182-5691-4f0b-90f0-ef3661a98e10",
+        "executionSummary": {
+          "executionOrder": 1,
+          "success": true
+        }
+      },
+      "execution_count": 1,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {},
+          "metadata": {},
+          "execution_count": 1
+        }
+      ]
+    },
+    {
+      "id": "e9138627-6b49-4c49-92bc-25d9313ca8dd",
+      "cell_type": "code",
+      "source": "NotebookUtils.banner(\"Environment\");\nNotebookUtils.kv(\"java.version\", System.getProperty(\"java.version\"));\nNotebookUtils.hr();",
+      "metadata": {
+        "language": "java",
+        "id": "e9138627-6b49-4c49-92bc-25d9313ca8dd",
+        "executionSummary": {
+          "executionOrder": 2,
+          "success": true
+        }
+      },
+      "execution_count": 2,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": "\n#####################\n###  Environment  ###\n#####################\njava.version             : 26-ea\n--------------------------------------------------------------------------------\n"
+          },
+          "metadata": {},
+          "execution_count": 2
+        }
+      ]
+    },
+    {
+      "id": "c007fd9b-45e4-4719-8de0-ed7b635b941e",
+      "cell_type": "markdown",
+      "source": "#### Why did the \"year\" field not mutate?",
+      "metadata": {
+        "language": "markdown",
+        "id": "c007fd9b-45e4-4719-8de0-ed7b635b941e"
+      }
+    },
+    {
+      "id": "8a50bed2-ac4e-415e-809d-9dc66d67352e",
+      "cell_type": "markdown",
+      "source": "##### Focus on the class field year",
+      "metadata": {
+        "language": "markdown",
+        "id": "8a50bed2-ac4e-415e-809d-9dc66d67352e"
+      }
+    },
+    {
+      "id": "1a7ac670-1adc-4acc-bc02-8c7e1d08f236",
+      "cell_type": "code",
+      "source": "final class NewYearEvent1 {\n    final int year = 2025;\n    @Override public String toString() \n        { return \"NewYearEvent[year=\" + year + \"]\"; }\n}",
+      "metadata": {
+        "language": "java",
+        "id": "1a7ac670-1adc-4acc-bc02-8c7e1d08f236",
+        "executionSummary": {
+          "executionOrder": 3,
+          "success": true
+        }
+      },
+      "execution_count": 3,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {},
+          "metadata": {},
+          "execution_count": 3
+        }
+      ]
+    },
+    {
+      "id": "13cdd91a-1d39-4676-ab36-5585cb1fbf9d",
+      "cell_type": "code",
+      "source": "var event = new NewYearEvent1();\nIO.println(\"Before: \" + event);\nimport java.lang.reflect.*;\ntry {\n    Field f = NewYearEvent1.class.getDeclaredField(\"year\");\n    f.setAccessible(true);\n    int newYear = 2026;\n    f.setInt(event, newYear);\n    IO.println(\"After:  \" + event);\n    IO.println(\"Mutation \" + (newYear == event.year ?  \n        \"succeed\" : \"failed\"));\n} catch (Throwable t) {\n    IO.println(\"Mutation unsuccessful: \" + \n        t.getClass().getSimpleName() + \n        \": \" + t.getMessage());\n}\nNotebookUtils.hr();",
+      "metadata": {
+        "language": "java",
+        "id": "13cdd91a-1d39-4676-ab36-5585cb1fbf9d",
+        "executionSummary": {
+          "executionOrder": 4,
+          "success": true
+        }
+      },
+      "execution_count": 4,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": "Before: NewYearEvent[year=2025]\nAfter:  NewYearEvent[year=2025]\nMutation failed\n--------------------------------------------------------------------------------\n"
+          },
+          "metadata": {},
+          "execution_count": 4
+        }
+      ]
+    },
+    {
+      "id": "ef482026-6668-4b3a-ad7a-fd4840efe995",
+      "cell_type": "markdown",
+      "source": "#### Why did the \"year\" field mutate?",
+      "metadata": {
+        "language": "markdown",
+        "id": "ef482026-6668-4b3a-ad7a-fd4840efe995"
+      }
+    },
+    {
+      "id": "fc4295da-edb7-47fe-8e70-9df9b6895854",
+      "cell_type": "code",
+      "source": "final class NewYearEvent2 {\n    final int year;\n    NewYearEvent2() { year = 2025; }\n    @Override public String toString() \n        { return \"NewYearEvent[year=\" + year + \"]\"; }\n}",
+      "metadata": {
+        "language": "java",
+        "id": "fc4295da-edb7-47fe-8e70-9df9b6895854",
+        "executionSummary": {
+          "executionOrder": 5,
+          "success": true
+        }
+      },
+      "execution_count": 5,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {},
+          "metadata": {},
+          "execution_count": 5
+        }
+      ]
+    },
+    {
+      "id": "3343486c-e6a6-4f91-8a66-7974c83c21ef",
+      "cell_type": "code",
+      "source": "var event = new NewYearEvent2();\nIO.println(\"Before: \" + event);\ntry {\n    Field f = NewYearEvent2.class.getDeclaredField(\"year\");\n    f.setAccessible(true);\n    int newYear = 2026;\n    f.setInt(event, newYear);\n    IO.println(\"After:  \" + event);\n    IO.println(\"Mutation \" + (newYear == event.year ?  \n        \"succeed\" : \"failed\"));\n} catch (Throwable t) {\n    IO.println(\"Mutation unsuccessful: \" + \n        t.getClass().getSimpleName() + \n        \": \" + t.getMessage());\n}\nNotebookUtils.hr();",
+      "metadata": {
+        "language": "java",
+        "id": "3343486c-e6a6-4f91-8a66-7974c83c21ef",
+        "executionSummary": {
+          "executionOrder": 6,
+          "success": true
+        }
+      },
+      "execution_count": 6,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": "Before: NewYearEvent[year=2025]\nAfter:  NewYearEvent[year=2026]\nMutation succeed\n--------------------------------------------------------------------------------\n"
+          },
+          "metadata": {},
+          "execution_count": 6
+        }
+      ]
+    }
+  ]
+}

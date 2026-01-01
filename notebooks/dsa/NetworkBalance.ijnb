@@ -1,0 +1,29 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 5,
+  "metadata": {
+    "language_info": {
+      "name": "java"
+    }
+  },
+  "cells": [
+    {
+      "id": "1ea1ae2e-b4f3-41dd-8f42-4d1854ede75d",
+      "cell_type": "markdown",
+      "source": "# Following is the topology of the OCI network\n\n\n![alt text](OCI_Network.png)\n\n> Paste the below mermaid graph to another file with VS Code Extension installed \"Markdown Preview Mermaid Support - Matt Bierner\"\n\n```mermaid\ngraph TD;\n    subgraph oci [OCI Network]\n    direction TB\n        subgraph fra [Frankfurt]\n        direction TB\n            A(LB) --> A1[(Server 1)];\n            A -->  A2[(Server 2)];\n            A -->  A3[(Server N)];\n        end;\n        subgraph bom [Mumbai]\n            direction TB\n            B(LB) --> B1[(Server 1)];\n            B -->  B2[(Server 2)];\n            B -->  B3[(Server M)];\n        end;\n        subgraph syd [Sydney]\n            direction TB\n            C(LB) --> C1[(Server 1)];\n            C -->  C2[(Server 2)];\n            C -->  C3[(Server P)];\n        end;\n    end;\n\n```\n",
+      "metadata": {
+        "language": "markdown",
+        "id": "1ea1ae2e-b4f3-41dd-8f42-4d1854ede75d"
+      }
+    },
+    {
+      "id": "7fee1470-4c42-404d-8c14-a7191460d4cc",
+      "cell_type": "markdown",
+      "source": "",
+      "metadata": {
+        "language": "markdown",
+        "id": "7fee1470-4c42-404d-8c14-a7191460d4cc"
+      }
+    }
+  ]
+}
