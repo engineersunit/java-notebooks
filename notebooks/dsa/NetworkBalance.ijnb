@@ -10,20 +10,193 @@
     {
       "id": "1ea1ae2e-b4f3-41dd-8f42-4d1854ede75d",
       "cell_type": "markdown",
-      "source": "# Following is the topology of the OCI network\n\n\n![alt text](OCI_Network.png)\n\n> Paste the below mermaid graph to another file with VS Code Extension installed \"Markdown Preview Mermaid Support - Matt Bierner\"\n\n```mermaid\ngraph TD;\n    subgraph oci [OCI Network]\n    direction TB\n        subgraph fra [Frankfurt]\n        direction TB\n            A(LB) --> A1[(Server 1)];\n            A -->  A2[(Server 2)];\n            A -->  A3[(Server N)];\n        end;\n        subgraph bom [Mumbai]\n            direction TB\n            B(LB) --> B1[(Server 1)];\n            B -->  B2[(Server 2)];\n            B -->  B3[(Server M)];\n        end;\n        subgraph syd [Sydney]\n            direction TB\n            C(LB) --> C1[(Server 1)];\n            C -->  C2[(Server 2)];\n            C -->  C3[(Server P)];\n        end;\n    end;\n\n```\n",
+      "source": "Following is the topology of the OCI network\n\n\n\n```mermaid\ngraph TD;\n    subgraph oci [OCI Network]\n    direction TB\n        subgraph fra [Frankfurt]\n        direction TB\n            A(LB) --> A1[(Server 1)];\n            A -->  A2[(Server 2)];\n            A -->  A3[(Server N)];\n        end;\n        subgraph bom [Mumbai]\n            direction TB\n            B(LB) --> B1[(Server 1)];\n            B -->  B2[(Server 2)];\n            B -->  B3[(Server M)];\n        end;\n        subgraph syd [Sydney]\n            direction TB\n            C(LB) --> C1[(Server 1)];\n            C -->  C2[(Server 2)];\n            C -->  C3[(Server P)];\n        end;\n    end;\n\n```\n\n> Rendered by VS Code Extension installed \"Markdown Preview Mermaid Support - Matt Bierner\"",
       "metadata": {
         "language": "markdown",
         "id": "1ea1ae2e-b4f3-41dd-8f42-4d1854ede75d"
       }
     },
     {
-      "id": "7fee1470-4c42-404d-8c14-a7191460d4cc",
+      "id": "3cab64f0-95bb-435d-8b95-948ddcff1c07",
       "cell_type": "markdown",
-      "source": "",
+      "source": "Here we use Java Records to represent a node in the Oracle Cloud Infrastructure (OCI)",
       "metadata": {
         "language": "markdown",
-        "id": "7fee1470-4c42-404d-8c14-a7191460d4cc"
+        "id": "3cab64f0-95bb-435d-8b95-948ddcff1c07"
       }
+    },
+    {
+      "id": "37f24270-6cde-4670-b0bf-5df08768af90",
+      "cell_type": "code",
+      "source": "record CloudNode(int value, CloudNode left, CloudNode right){}",
+      "metadata": {
+        "language": "java",
+        "executionSummary": {
+          "executionOrder": 11,
+          "success": true
+        }
+      },
+      "execution_count": 11,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {},
+          "metadata": {},
+          "execution_count": 11
+        }
+      ]
+    },
+    {
+      "id": "ededb797-f532-408a-a39e-522b3c9f0956",
+      "cell_type": "markdown",
+      "source": "We now provide the cloud resource values in postorder",
+      "metadata": {
+        "language": "markdown",
+        "id": "ededb797-f532-408a-a39e-522b3c9f0956"
+      }
+    },
+    {
+      "id": "33f470b9-fe49-4036-86a7-f711ab326e6c",
+      "cell_type": "code",
+      "source": "int[] cloudResources = {1, 2, 3, 4, 5, 6, 7}",
+      "metadata": {
+        "language": "java",
+        "executionSummary": {
+          "executionOrder": 12,
+          "success": true
+        }
+      },
+      "execution_count": 12,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {},
+          "metadata": {},
+          "execution_count": 12
+        }
+      ]
+    },
+    {
+      "id": "0765fb3d-4538-4630-b571-d567068805ca",
+      "cell_type": "markdown",
+      "source": "BST \n\n```mermaid\ngraph TD;\n    1((1)) --> 2((2))\n    1 --> 3((3))\n    2 --> 4((4))\n    2 --> 5((5))\n    3 --> 7((7))\n    3 --> 6((6))\n```",
+      "metadata": {
+        "language": "markdown",
+        "id": "0765fb3d-4538-4630-b571-d567068805ca"
+      }
+    },
+    {
+      "id": "09bd2333-3c86-4364-8776-f6b57df5e219",
+      "cell_type": "markdown",
+      "source": "Now we create the tree representation of the values",
+      "metadata": {
+        "language": "markdown",
+        "id": "09bd2333-3c86-4364-8776-f6b57df5e219"
+      }
+    },
+    {
+      "id": "1e7bbed2-0ae3-4fd2-ab72-3cc3334186b8",
+      "cell_type": "code",
+      "source": "private static CloudNode arrayToBST(int[] nums, int start, int end) {\n        if (start > end) {\n            return null;\n        }\n        int mid = start + (end - start) / 2;\n        CloudNode root = new CloudNode(\n            nums[mid], \n            arrayToBST(nums, start, mid - 1), \n            arrayToBST(nums, mid + 1, end));\n        return root;\n    }",
+      "metadata": {
+        "language": "java",
+        "executionSummary": {
+          "executionOrder": 13,
+          "success": true
+        }
+      },
+      "execution_count": 13,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {},
+          "metadata": {},
+          "execution_count": 13
+        }
+      ]
+    },
+    {
+      "id": "6c2c9554-ce39-4797-a7d4-31e75feb63ab",
+      "cell_type": "markdown",
+      "source": "Now we have supply the cloud resource values to create the tree",
+      "metadata": {
+        "language": "markdown",
+        "id": "6c2c9554-ce39-4797-a7d4-31e75feb63ab"
+      }
+    },
+    {
+      "id": "841d7e9f-8be8-4f99-a6b6-f53688ff8620",
+      "cell_type": "code",
+      "source": "CloudNode networkTree = arrayToBST (cloudResources, 0, cloudResources.length - 1);",
+      "metadata": {
+        "language": "java",
+        "executionSummary": {
+          "executionOrder": 14,
+          "success": true
+        }
+      },
+      "execution_count": 14,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {},
+          "metadata": {},
+          "execution_count": 14
+        }
+      ]
+    },
+    {
+      "id": "8e651911-f56b-406e-b6e8-7054ec8d4a4b",
+      "cell_type": "markdown",
+      "source": "Let us verify if the tree is created by printing the values",
+      "metadata": {
+        "language": "markdown",
+        "id": "8e651911-f56b-406e-b6e8-7054ec8d4a4b"
+      }
+    },
+    {
+      "id": "dc214e3d-3998-4241-a24f-9c870f904754",
+      "cell_type": "code",
+      "source": "private static void inorderTraversal(CloudNode root) {\n        if (root != null) {\n            inorderTraversal(root.left());\n            IO.print(root.value() + \" \");\n            inorderTraversal(root.right());\n        }\n    }",
+      "metadata": {
+        "language": "java",
+        "executionSummary": {
+          "executionOrder": 15,
+          "success": true
+        }
+      },
+      "execution_count": 15,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {},
+          "metadata": {},
+          "execution_count": 15
+        }
+      ]
+    },
+    {
+      "id": "eeba175d-b8ce-4206-8c9b-4743949c6be9",
+      "cell_type": "code",
+      "source": "inorderTraversal(networkTree);",
+      "metadata": {
+        "language": "java",
+        "executionSummary": {
+          "executionOrder": 16,
+          "success": true
+        }
+      },
+      "execution_count": 16,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": "1 2 3 4 5 6 7 "
+          },
+          "metadata": {},
+          "execution_count": 16
+        }
+      ]
     }
   ]
 }
