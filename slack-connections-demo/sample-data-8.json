@@ -1,0 +1,42 @@
+{
+  "employees": [
+    {"id":"E-2001","name":"Alice","email":"alice@acme.com","department":"Platform"},
+    {"id":"E-2002","name":"Bob","email":"bob@acme.com","department":"SRE"},
+    {"id":"E-2003","name":"Cara","email":"cara@acme.com","department":"Payments"},
+    {"id":"E-2004","name":"Dave","email":"dave@acme.com","department":"Platform"},
+    {"id":"E-2005","name":"Eve","email":"eve@acme.com","department":"Security"},
+    {"id":"E-2006","name":"Frank","email":"frank@acme.com","department":"Mobile"},
+    {"id":"E-2007","name":"Grace","email":"grace@acme.com","department":"Data"},
+    {"id":"E-2008","name":"Heidi","email":"heidi@acme.com","department":"UX"}
+  ],
+  "slackUsers": [
+    {"slackId":"U101","handle":"alice","employeeId":"E-2001"},
+    {"slackId":"U102","handle":"bob","employeeId":"E-2002"},
+    {"slackId":"U103","handle":"cara","employeeId":"E-2003"},
+    {"slackId":"U104","handle":"dave","employeeId":"E-2004"},
+    {"slackId":"U105","handle":"eve","employeeId":"E-2005"},
+    {"slackId":"U106","handle":"frank","employeeId":"E-2006"},
+    {"slackId":"U107","handle":"grace","employeeId":"E-2007"},
+    {"slackId":"U108","handle":"heidi","employeeId":"E-2008"}
+  ],
+  "interactions": [
+    {"issueKey":"JIRA-800","employeeA":"E-2001","employeeB":"E-2002","type":"JIRA","timestamp":"2026-01-08T16:38:29.071785Z"},
+    {"issueKey":"BUG-801","employeeA":"E-2001","employeeB":"E-2002","type":"BUG","timestamp":"2026-01-10T16:38:29.071785Z"},
+    {"issueKey":"CR-802","employeeA":"E-2001","employeeB":"E-2003","type":"CODE_REVIEW","timestamp":"2026-01-09T16:38:29.071785Z"},
+    {"issueKey":"JIRA-803","employeeA":"E-2001","employeeB":"E-2004","type":"JIRA","timestamp":"2026-01-01T16:38:29.071785Z"},
+    {"issueKey":"BUG-804","employeeA":"E-2002","employeeB":"E-2004","type":"BUG","timestamp":"2026-01-06T16:38:29.071785Z"},
+    {"issueKey":"DISC-805","employeeA":"E-2002","employeeB":"E-2005","type":"DISCUSSION","timestamp":"2026-01-11T09:38:29.071785Z"},
+    {"issueKey":"JIRA-806","employeeA":"E-2003","employeeB":"E-2007","type":"JIRA","timestamp":"2026-01-05T16:38:29.071785Z"},
+    {"issueKey":"CR-807","employeeA":"E-2004","employeeB":"E-2006","type":"CODE_REVIEW","timestamp":"2026-01-07T16:38:29.071785Z"},
+    {"issueKey":"JIRA-808","employeeA":"E-2005","employeeB":"E-2006","type":"JIRA","timestamp":"2026-01-10T16:38:29.071785Z"},
+    {"issueKey":"BUG-809","employeeA":"E-2005","employeeB":"E-2008","type":"BUG","timestamp":"2026-01-09T16:38:29.071785Z"},
+    {"issueKey":"DISC-810","employeeA":"E-2006","employeeB":"E-2007","type":"DISCUSSION","timestamp":"2026-01-08T16:38:29.071785Z"},
+    {"issueKey":"CR-811","employeeA":"E-2007","employeeB":"E-2008","type":"CODE_REVIEW","timestamp":"2026-01-10T16:38:29.071785Z"},
+    {"issueKey":"JIRA-812","employeeA":"E-2001","employeeB":"E-2002","type":"JIRA","timestamp":"2026-01-09T16:38:29.071785Z"},
+    {"issueKey":"DISC-813","employeeA":"E-2005","employeeB":"E-2006","type":"DISCUSSION","timestamp":"2026-01-11T04:38:29.071785Z"},
+    {"issueKey":"JIRA-750","employeeA":"E-2001","employeeB":"E-2008","type":"JIRA","timestamp":"2025-12-02T16:38:29.071785Z"},
+    {"issueKey":"BUG-751","employeeA":"E-2002","employeeB":"E-2003","type":"BUG","timestamp":"2025-12-22T16:38:29.071785Z"},
+    {"issueKey":"DISC-752","employeeA":"E-2004","employeeB":"E-2007","type":"DISCUSSION","timestamp":"2025-12-17T16:38:29.071785Z"},
+    {"issueKey":"JIRA-753","employeeA":"E-2006","employeeB":"E-2002","type":"JIRA","timestamp":"2025-12-11T16:38:29.071785Z"}
+  ]
+}

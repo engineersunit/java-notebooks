@@ -1,0 +1,23 @@
+{
+  "employees": [
+    {"id":"E-1001","name":"Alice","email":"alice@acme.com","department":"Platform"},
+    {"id":"E-1002","name":"Bob","email":"bob@acme.com","department":"SRE"},
+    {"id":"E-1003","name":"Cara","email":"cara@acme.com","department":"Payments"},
+    {"id":"E-1004","name":"Dave","email":"dave@acme.com","department":"Platform"}
+  ],
+  "slackUsers": [
+    {"slackId":"U1","handle":"alice","employeeId":"E-1001"},
+    {"slackId":"U2","handle":"bob","employeeId":"E-1002"},
+    {"slackId":"U3","handle":"cara","employeeId":"E-1003"},
+    {"slackId":"U4","handle":"dave","employeeId":"E-1004"}
+  ],
+  "interactions": [
+    {"issueKey":"JIRA-123","employeeA":"E-1001","employeeB":"E-1002","type":"JIRA","timestamp":"2026-01-08T16:16:02.221062Z"},
+    {"issueKey":"BUG-77","employeeA":"E-1001","employeeB":"E-1002","type":"BUG","timestamp":"2026-01-09T16:16:02.221062Z"},
+    {"issueKey":"JIRA-200","employeeA":"E-1001","employeeB":"E-1003","type":"JIRA","timestamp":"2026-01-10T16:16:02.221062Z"},
+    {"issueKey":"BUG-90","employeeA":"E-1002","employeeB":"E-1004","type":"BUG","timestamp":"2026-01-10T16:16:02.221062Z"},
+    {"issueKey":"JIRA-201","employeeA":"E-1003","employeeB":"E-1004","type":"JIRA","timestamp":"2026-01-11T10:16:02.221062Z"},
+    {"issueKey":"JIRA-050","employeeA":"E-1001","employeeB":"E-1004","type":"JIRA","timestamp":"2025-12-12T16:16:02.221062Z"},
+    {"issueKey":"BUG-10","employeeA":"E-1002","employeeB":"E-1003","type":"BUG","timestamp":"2025-12-27T16:16:02.221062Z"}
+  ]
+}

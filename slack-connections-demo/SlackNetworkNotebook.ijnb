@@ -1,0 +1,210 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 5,
+  "metadata": {
+    "language_info": {
+      "name": "java"
+    }
+  },
+  "cells": [
+    {
+      "id": "intro-001",
+      "cell_type": "markdown",
+      "source": "### Slack Network Notebook (Mermaid)\n\nThis notebook is a self-contained, step-by-step story that builds a Slack interactions network for 8 employees and renders it as Mermaid graphs inline. No external compilation or file-based class loading is required.\n\nWe will:\n1) Define the domain model types (employees, users, interactions)\n2) Implement a graph to aggregate interactions\n3) Build a sample dataset (8 employees across teams)\n4) Render Mermaid graphs inline (all-time and last 14 days)\n5) Optionally tweak time windows for custom views",
+      "metadata": {
+        "language": "markdown",
+        "id": "intro-001"
+      }
+    },
+    {
+      "id": "step1-why-001",
+      "cell_type": "markdown",
+      "source": "#### Step 1: Domain model types\nWe start with the core concepts:\n- InteractionType: classification of interaction (JIRA, BUG, code review, discussion)\n- Employee: identity, email, department\n- SlackUser: maps a Slack user to an Employee\n- Interaction: one event connecting two employees on a specific issue",
+      "metadata": {
+        "language": "markdown",
+        "id": "step1-why-001"
+      }
+    },
+    {
+      "id": "domain-java-001",
+      "cell_type": "code",
+      "source": "import java.time.*;\n\nenum InteractionType {\n    JIRA,\n    BUG,\n    CODE_REVIEW,\n    DISCUSSION\n}\n\nrecord Employee(String id, String name, String email, String department) {}\n\nrecord SlackUser(String slackId, String handle, String employeeId) {}\n\nrecord Interaction(String issueKey,\n                   String employeeA,\n                   String employeeB,\n                   InteractionType type,\n                   Instant timestamp) {}",
+      "metadata": {
+        "language": "java",
+        "id": "domain-java-001",
+        "executionSummary": {
+          "executionOrder": 9,
+          "success": true
+        }
+      },
+      "execution_count": 9,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {},
+          "metadata": {},
+          "execution_count": 9
+        }
+      ]
+    },
+    {
+      "id": "step1b-why-graph-001",
+      "cell_type": "markdown",
+      "source": "#### Step 1b: Graph implementation\nWe now implement an undirected, weighted graph of employees. Each edge weight counts how many interactions occurred between the two employees.\n\nCapabilities:\n- Add employees and Slack users\n- Record interactions and build an adjacency map\n- Query neighbors, top collaborators, and shortest path (BFS)\n- Build filtered snapshots (e.g., last N days)\n- Export to Mermaid for notebook-friendly inline visualization\n- Optional JSON persistence for reuse",
+      "metadata": {
+        "language": "markdown",
+        "id": "step1b-why-graph-001"
+      }
+    },
+    {
+      "id": "graph-java-001",
+      "cell_type": "code",
+      "source": "import java.util.*;\nimport java.util.function.Predicate;\nimport java.nio.file.*;\nimport java.nio.charset.StandardCharsets;\nimport java.io.IOException;\n\nclass ConnectionGraph {\n    private final Map<String, Employee> employees = new HashMap<>();\n    private final Map<String, SlackUser> slackUsers = new HashMap<>();\n    private final Map<String, String> slackToEmployee = new HashMap<>();\n    private final List<Interaction> interactions = new ArrayList<>();\n\n    // Map<EmployeeId, Map<EmployeeId, weight>>\n    private final Map<String, Map<String, Integer>> adjacency = new HashMap<>();\n\n    // Employee management\n    public void addEmployee(Employee e) {\n        Objects.requireNonNull(e, \"employee\");\n        if (employees.putIfAbsent(e.id(), e) != null) {\n            throw new IllegalArgumentException(\"Employee already exists: \" + e.id());\n        }\n    }\n\n    public Map<String, Employee> getEmployees() {\n        return Collections.unmodifiableMap(employees);\n    }\n\n    public String nameOf(String employeeId) {\n        Employee e = employees.get(employeeId);\n        return e == null ? employeeId : e.name();\n    }\n\n    // Slack user management\n    public void addSlackUser(SlackUser s) {\n        Objects.requireNonNull(s, \"slackUser\");\n        if (!employees.containsKey(s.employeeId())) {\n            throw new IllegalArgumentException(\"No employee for slack user mapping: \" + s.employeeId());\n        }\n        if (slackUsers.putIfAbsent(s.slackId(), s) != null) {\n            throw new IllegalArgumentException(\"Slack user already exists: \" + s.slackId());\n        }\n        slackToEmployee.put(s.slackId(), s.employeeId());\n    }\n\n    // Recording interactions\n    public void recordInteractionBySlack(String issueKey, String slackA, String slackB,\n                                         InteractionType type, Instant timestamp) {\n        String empA = slackToEmployee.get(slackA);\n        String empB = slackToEmployee.get(slackB);\n        if (empA == null || empB == null) {\n            throw new IllegalArgumentException(\"Slack ID missing mapping to employee: \" + slackA + \", \" + slackB);\n        }\n        recordInteractionByEmployee(issueKey, empA, empB, type, timestamp);\n    }\n\n    public void recordInteractionByEmployee(String issueKey, String employeeA, String employeeB,\n                                            InteractionType type, Instant timestamp) {\n        Objects.requireNonNull(issueKey, \"issueKey\");\n        Objects.requireNonNull(type, \"type\");\n        Objects.requireNonNull(timestamp, \"timestamp\");\n\n        if (!employees.containsKey(employeeA) || !employees.containsKey(employeeB)) {\n            throw new IllegalArgumentException(\"Unknown employee(s) for interaction: \" + employeeA + \", \" + employeeB);\n        }\n        if (employeeA.equals(employeeB)) {\n            return; // ignore self interaction\n        }\n        interactions.add(new Interaction(issueKey, employeeA, employeeB, type, timestamp));\n        incrementEdge(employeeA, employeeB, 1);\n    }\n\n    // Queries\n    public Map<String, Integer> getNeighbors(String employeeId) {\n        return adjacency.getOrDefault(employeeId, Map.of());\n    }\n\n    public List<Map.Entry<String, Integer>> getTopCollaborators(String employeeId, int limit) {\n        return getNeighbors(employeeId).entrySet().stream()\n                .sorted((a, b) -> Integer.compare(b.getValue(), a.getValue()))\n                .limit(limit)\n                .toList();\n    }\n\n    public List<String> shortestPath(String fromEmployeeId, String toEmployeeId) {\n        if (fromEmployeeId.equals(toEmployeeId)) return List.of(fromEmployeeId);\n        if (!employees.containsKey(fromEmployeeId) || !employees.containsKey(toEmployeeId)) return List.of();\n\n        Set<String> visited = new HashSet<>();\n        Map<String, String> prev = new HashMap<>();\n        Deque<String> q = new ArrayDeque<>();\n\n        visited.add(fromEmployeeId);\n        q.add(fromEmployeeId);\n\n        while (!q.isEmpty()) {\n            String u = q.poll();\n            for (String v : adjacency.getOrDefault(u, Map.of()).keySet()) {\n                if (!visited.contains(v)) {\n                    visited.add(v);\n                    prev.put(v, u);\n                    if (v.equals(toEmployeeId)) {\n                        return reconstructPath(prev, fromEmployeeId, toEmployeeId);\n                    }\n                    q.add(v);\n                }\n            }\n        }\n        return List.of();\n    }\n\n    private List<String> reconstructPath(Map<String, String> prev, String start, String end) {\n        LinkedList<String> path = new LinkedList<>();\n        String curr = end;\n        while (curr != null) {\n            path.addFirst(curr);\n            curr = prev.get(curr);\n        }\n        if (!path.isEmpty() && path.getFirst().equals(start)) {\n            return path;\n        }\n        return List.of();\n    }\n\n    // Filtered views\n    public Map<String, Map<String, Integer>> buildAdjacencyFiltered(Predicate<Interaction> filter) {\n        Map<String, Map<String, Integer>> adj = new HashMap<>();\n        for (Interaction i : interactions) {\n            if (filter.test(i)) {\n                incrementEdge(adj, i.employeeA(), i.employeeB(), 1);\n            }\n        }\n        return deepUnmodifiable(adj);\n    }\n\n    // Mermaid export\n    public String toMermaid() {\n        return toMermaidFromAdjacency(this.adjacency);\n    }\n\n    public String toMermaidFiltered(Predicate<Interaction> filter) {\n        Map<String, Map<String, Integer>> adj = buildAdjacencyFiltered(filter);\n        return toMermaidFromAdjacency(adj);\n    }\n\n    private String toMermaidFromAdjacency(Map<String, Map<String, Integer>> adj) {\n        StringBuilder sb = new StringBuilder();\n        sb.append(\"graph TD;\\n\");\n\n        // nodes\n        for (Employee e : employees.values()) {\n            String id = mermaidSafeId(e.id());\n            sb.append(\"  \").append(id)\n              .append(\"[\\\"\").append(escapeMermaid(e.name()))\n              .append(\"<br/>\").append(escapeMermaid(e.department()))\n              .append(\"\\\"];\\n\");\n        }\n\n        // undirected edges once\n        Set<String> done = new HashSet<>();\n        for (Map.Entry<String, Map<String, Integer>> uEntry : adj.entrySet()) {\n            String u = uEntry.getKey();\n            for (Map.Entry<String, Integer> vEntry : uEntry.getValue().entrySet()) {\n                String v = vEntry.getKey();\n                int w = vEntry.getValue();\n                String key = u.compareTo(v) < 0 ? u + \"#\" + v : v + \"#\" + u;\n                if (done.add(key)) {\n                    sb.append(\"  \").append(mermaidSafeId(u))\n                      .append(\" ---|\").append(w).append(\"| \")\n                      .append(mermaidSafeId(v)).append(\";\\n\");\n                }\n            }\n        }\n        return sb.toString();\n    }\n\n    private static String mermaidSafeId(String s) {\n        if (s == null || s.isEmpty()) return \"N_\";\n        String base = s.replaceAll(\"[^A-Za-z0-9_]\", \"_\");\n        if (!Character.isLetter(base.charAt(0))) {\n            base = \"N_\" + base;\n        }\n        return base;\n    }\n\n    private static String escapeMermaid(String s) {\n        if (s == null) return \"\";\n        return s.replace(\"\\\\\", \"\\\\\\\\\").replace(\"\\\"\", \"\\\\\\\"\");\n    }\n\n    // Optional JSON persistence\n    public String toJson() {\n        StringBuilder sb = new StringBuilder();\n        sb.append(\"{\\n\");\n        sb.append(\"  \\\"employees\\\": [\\n\");\n        List<Employee> elist = new ArrayList<>(employees.values());\n        elist.sort(Comparator.comparing(Employee::id));\n        for (int i = 0; i < elist.size(); i++) {\n            Employee e = elist.get(i);\n            sb.append(\"    {\")\n              .append(\"\\\"id\\\":\\\"\").append(jsonEscape(e.id())).append(\"\\\",\")\n              .append(\"\\\"name\\\":\\\"\").append(jsonEscape(e.name())).append(\"\\\",\")\n              .append(\"\\\"email\\\":\\\"\").append(jsonEscape(e.email())).append(\"\\\",\")\n              .append(\"\\\"department\\\":\\\"\").append(jsonEscape(e.department())).append(\"\\\"\")\n              .append(\"}\");\n            if (i < elist.size() - 1) sb.append(\",\");\n            sb.append(\"\\n\");\n        }\n        sb.append(\"  ],\\n\");\n\n        sb.append(\"  \\\"slackUsers\\\": [\\n\");\n        List<SlackUser> sulist = new ArrayList<>(slackUsers.values());\n        sulist.sort(Comparator.comparing(SlackUser::slackId));\n        for (int i = 0; i < sulist.size(); i++) {\n            SlackUser s = sulist.get(i);\n            sb.append(\"    {\")\n              .append(\"\\\"slackId\\\":\\\"\").append(jsonEscape(s.slackId())).append(\"\\\",\")\n              .append(\"\\\"handle\\\":\\\"\").append(jsonEscape(s.handle())).append(\"\\\",\")\n              .append(\"\\\"employeeId\\\":\\\"\").append(jsonEscape(s.employeeId())).append(\"\\\"\")\n              .append(\"}\");\n            if (i < sulist.size() - 1) sb.append(\",\");\n            sb.append(\"\\n\");\n        }\n        sb.append(\"  ],\\n\");\n\n        sb.append(\"  \\\"interactions\\\": [\\n\");\n        for (int i = 0; i < interactions.size(); i++) {\n            Interaction in = interactions.get(i);\n            sb.append(\"    {\")\n              .append(\"\\\"issueKey\\\":\\\"\").append(jsonEscape(in.issueKey())).append(\"\\\",\")\n              .append(\"\\\"employeeA\\\":\\\"\").append(jsonEscape(in.employeeA())).append(\"\\\",\")\n              .append(\"\\\"employeeB\\\":\\\"\").append(jsonEscape(in.employeeB())).append(\"\\\",\")\n              .append(\"\\\"type\\\":\\\"\").append(in.type().name()).append(\"\\\",\")\n              .append(\"\\\"timestamp\\\":\\\"\").append(in.timestamp().toString()).append(\"\\\"\")\n              .append(\"}\");\n            if (i < interactions.size() - 1) sb.append(\",\");\n            sb.append(\"\\n\");\n        }\n        sb.append(\"  ]\\n\");\n        sb.append(\"}\\n\");\n        return sb.toString();\n    }\n\n    public void saveJson(Path path) throws IOException {\n        Files.writeString(path, toJson(), StandardCharsets.UTF_8);\n    }\n\n    public static ConnectionGraph loadJson(Path path) throws IOException {\n        String json = Files.readString(path, StandardCharsets.UTF_8);\n        return fromJson(json);\n    }\n\n    public static ConnectionGraph fromJson(String json) {\n        ConnectionGraph g = new ConnectionGraph();\n        String empArr = extractArray(json, \"employees\");\n        for (Map<String, String> m : parseFlatObjectsArray(empArr)) {\n            String id = m.get(\"id\");\n            if (id == null || id.isEmpty()) continue;\n            g.addEmployee(new Employee(\n                    id,\n                    m.getOrDefault(\"name\", \"\"),\n                    m.getOrDefault(\"email\", \"\"),\n                    m.getOrDefault(\"department\", \"\")\n            ));\n        }\n        String suArr = extractArray(json, \"slackUsers\");\n        for (Map<String, String> m : parseFlatObjectsArray(suArr)) {\n            String sid = m.get(\"slackId\");\n            String empId = m.get(\"employeeId\");\n            if (sid != null && empId != null) {\n                g.addSlackUser(new SlackUser(\n                        sid,\n                        m.getOrDefault(\"handle\", \"\"),\n                        empId\n                ));\n            }\n        }\n        String inArr = extractArray(json, \"interactions\");\n        for (Map<String, String> m : parseFlatObjectsArray(inArr)) {\n            String issueKey = m.get(\"issueKey\");\n            String a = m.get(\"employeeA\");\n            String b = m.get(\"employeeB\");\n            String typeS = m.get(\"type\");\n            String ts = m.get(\"timestamp\");\n            if (issueKey != null && a != null && b != null && typeS != null && ts != null) {\n                InteractionType type = InteractionType.valueOf(typeS);\n                Instant t = Instant.parse(ts);\n                g.recordInteractionByEmployee(issueKey, a, b, type, t);\n            }\n        }\n        return g;\n    }\n\n    private static String jsonEscape(String s) {\n        if (s == null) return \"\";\n        StringBuilder out = new StringBuilder(s.length() + 8);\n        for (int i = 0; i < s.length(); i++) {\n            char c = s.charAt(i);\n            switch (c) {\n                case '\\\\' -> out.append(\"\\\\\\\\\");\n                case '\"' -> out.append(\"\\\\\\\"\");\n                case '\\n' -> out.append(\"\\\\n\");\n                case '\\r' -> out.append(\"\\\\r\");\n                case '\\t' -> out.append(\"\\\\t\");\n                default -> out.append(c);\n            }\n        }\n        return out.toString();\n    }\n\n    private static String extractArray(String json, String key) {\n        String pattern = \"\\\"\" + key + \"\\\"\";\n        int k = json.indexOf(pattern);\n        if (k < 0) return \"\";\n        int lb = json.indexOf('[', k);\n        if (lb < 0) return \"\";\n        int depth = 0;\n        int i = lb;\n        for (; i < json.length(); i++) {\n            char c = json.charAt(i);\n            if (c == '[') depth++;\n            else if (c == ']') {\n                depth--;\n                if (depth == 0) { i++; break; }\n            }\n        }\n        if (i <= lb) return \"\";\n        return json.substring(lb + 1, i - 1);\n    }\n\n    private static List<Map<String, String>> parseFlatObjectsArray(String arr) {\n        List<Map<String, String>> out = new ArrayList<>();\n        int i = 0, n = arr.length();\n        while (i < n) {\n            while (i < n && (Character.isWhitespace(arr.charAt(i)) || arr.charAt(i) == ',')) i++;\n            if (i >= n) break;\n            if (arr.charAt(i) != '{') { i++; continue; }\n            int start = i;\n            int depth = 0;\n            boolean inString = false;\n            boolean escape = false;\n            for (; i < n; i++) {\n                char c = arr.charAt(i);\n                if (inString) {\n                    if (escape) { escape = false; }\n                    else if (c == '\\\\') { escape = true; }\n                    else if (c == '\\\"') { inString = false; }\n                    continue;\n                }\n                if (c == '\\\"') { inString = true; continue; }\n                if (c == '{') depth++;\n                else if (c == '}') {\n                    depth--;\n                    if (depth == 0) { i++; break; }\n                }\n            }\n            if (i <= start) break;\n            String obj = arr.substring(start, i);\n            out.add(parseFlatObject(obj));\n        }\n        return out;\n    }\n\n    private static Map<String, String> parseFlatObject(String obj) {\n        Map<String, String> m = new HashMap<>();\n        int i = 0, n = obj.length();\n        while (i < n) {\n            char ch = obj.charAt(i);\n            if (ch == '\\\"') {\n                i++;\n                StringBuilder key = new StringBuilder();\n                boolean esc = false;\n                while (i < n) {\n                    char c = obj.charAt(i);\n                    if (esc) { key.append(c); esc = false; i++; continue; }\n                    if (c == '\\\\') { esc = true; i++; continue; }\n                    if (c == '\\\"') break;\n                    key.append(c); i++;\n                }\n                i++;\n                while (i < n && Character.isWhitespace(obj.charAt(i))) i++;\n                if (i < n && obj.charAt(i) == ':') i++;\n                while (i < n && Character.isWhitespace(obj.charAt(i))) i++;\n                String valStr = \"\";\n                if (i < n && obj.charAt(i) == '\\\"') {\n                    i++;\n                    StringBuilder val = new StringBuilder();\n                    esc = false;\n                    while (i < n) {\n                        char c = obj.charAt(i);\n                        if (esc) {\n                            switch (c) {\n                                case '\"' -> val.append('\"');\n                                case '\\\\' -> val.append('\\\\');\n                                case 'n' -> val.append('\\n');\n                                case 'r' -> val.append('\\r');\n                                case 't' -> val.append('\\t');\n                                default -> val.append(c);\n                            }\n                            esc = false;\n                            i++;\n                            continue;\n                        }\n                        if (c == '\\\\') { esc = true; i++; continue; }\n                        if (c == '\\\"') break;\n                        val.append(c); i++;\n                    }\n                    i++;\n                    valStr = val.toString();\n                }\n                m.put(key.toString(), valStr);\n            } else {\n                i++;\n            }\n        }\n        return m;\n    }\n\n    private void incrementEdge(String a, String b, int delta) {\n        incrementEdge(this.adjacency, a, b, delta);\n    }\n\n    private static void incrementEdge(Map<String, Map<String, Integer>> adj, String a, String b, int delta) {\n        if (a.equals(b)) return;\n        adj.computeIfAbsent(a, k -> new HashMap<>()).merge(b, delta, Integer::sum);\n        adj.computeIfAbsent(b, k -> new HashMap<>()).merge(a, delta, Integer::sum);\n    }\n\n    private static Map<String, Map<String, Integer>> deepUnmodifiable(Map<String, Map<String, Integer>> src) {\n        Map<String, Map<String, Integer>> out = new HashMap<>();\n        for (var e : src.entrySet()) {\n            out.put(e.getKey(), Collections.unmodifiableMap(new HashMap<>(e.getValue())));\n        }\n        return Collections.unmodifiableMap(out);\n    }\n}\n",
+      "metadata": {
+        "language": "java",
+        "id": "graph-java-001",
+        "executionSummary": {
+          "executionOrder": 10,
+          "success": true
+        }
+      },
+      "execution_count": 10,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {},
+          "metadata": {},
+          "execution_count": 10
+        }
+      ]
+    },
+    {
+      "id": "step2a-why-data-001",
+      "cell_type": "markdown",
+      "source": "#### Step 2a: Build a sample dataset\nWe create 8 employees across Platform, SRE, Payments, Security, Mobile, Data, and UX. Then we record interactions to produce meaningful edge weights and cross-team connections.",
+      "metadata": {
+        "language": "markdown",
+        "id": "step2a-why-data-001"
+      }
+    },
+    {
+      "id": "data-java-001",
+      "cell_type": "code",
+      "source": "class SlackEightEmployeesData {\n    static ConnectionGraph buildGraph(Instant now) {\n        ConnectionGraph graph = new ConnectionGraph();\n\n        var e1 = new Employee(\"E-2001\", \"Alice\", \"alice@acme.com\", \"Platform\");\n        var e2 = new Employee(\"E-2002\", \"Bob\",   \"bob@acme.com\",   \"SRE\");\n        var e3 = new Employee(\"E-2003\", \"Cara\",  \"cara@acme.com\",  \"Payments\");\n        var e4 = new Employee(\"E-2004\", \"Dave\",  \"dave@acme.com\",  \"Platform\");\n        var e5 = new Employee(\"E-2005\", \"Eve\",   \"eve@acme.com\",   \"Security\");\n        var e6 = new Employee(\"E-2006\", \"Frank\", \"frank@acme.com\", \"Mobile\");\n        var e7 = new Employee(\"E-2007\", \"Grace\", \"grace@acme.com\", \"Data\");\n        var e8 = new Employee(\"E-2008\", \"Heidi\", \"heidi@acme.com\", \"UX\");\n\n        graph.addEmployee(e1); graph.addEmployee(e2); graph.addEmployee(e3); graph.addEmployee(e4);\n        graph.addEmployee(e5); graph.addEmployee(e6); graph.addEmployee(e7); graph.addEmployee(e8);\n\n        graph.addSlackUser(new SlackUser(\"U101\", \"alice\", \"E-2001\"));\n        graph.addSlackUser(new SlackUser(\"U102\", \"bob\",   \"E-2002\"));\n        graph.addSlackUser(new SlackUser(\"U103\", \"cara\",  \"E-2003\"));\n        graph.addSlackUser(new SlackUser(\"U104\", \"dave\",  \"E-2004\"));\n        graph.addSlackUser(new SlackUser(\"U105\", \"eve\",   \"E-2005\"));\n        graph.addSlackUser(new SlackUser(\"U106\", \"frank\", \"E-2006\"));\n        graph.addSlackUser(new SlackUser(\"U107\", \"grace\", \"E-2007\"));\n        graph.addSlackUser(new SlackUser(\"U108\", \"heidi\", \"E-2008\"));\n\n        // Recent (~14 days)\n        graph.recordInteractionBySlack(\"JIRA-800\", \"U101\", \"U102\", InteractionType.JIRA,        now.minus(Duration.ofDays(3)));\n        graph.recordInteractionBySlack(\"BUG-801\",  \"U101\", \"U102\", InteractionType.BUG,         now.minus(Duration.ofDays(1)));\n        graph.recordInteractionBySlack(\"CR-802\",   \"U101\", \"U103\", InteractionType.CODE_REVIEW, now.minus(Duration.ofDays(2)));\n        graph.recordInteractionBySlack(\"JIRA-803\", \"U101\", \"U104\", InteractionType.JIRA,        now.minus(Duration.ofDays(10)));\n        graph.recordInteractionBySlack(\"BUG-804\",  \"U102\", \"U104\", InteractionType.BUG,         now.minus(Duration.ofDays(5)));\n        graph.recordInteractionBySlack(\"DISC-805\", \"U102\", \"U105\", InteractionType.DISCUSSION,  now.minus(Duration.ofHours(7)));\n        graph.recordInteractionBySlack(\"JIRA-806\", \"U103\", \"U107\", InteractionType.JIRA,        now.minus(Duration.ofDays(6)));\n        graph.recordInteractionBySlack(\"CR-807\",   \"U104\", \"U106\", InteractionType.CODE_REVIEW, now.minus(Duration.ofDays(4)));\n        graph.recordInteractionBySlack(\"JIRA-808\", \"U105\", \"U106\", InteractionType.JIRA,        now.minus(Duration.ofDays(1)));\n        graph.recordInteractionBySlack(\"BUG-809\",  \"U105\", \"U108\", InteractionType.BUG,         now.minus(Duration.ofDays(2)));\n        graph.recordInteractionBySlack(\"DISC-810\", \"U106\", \"U107\", InteractionType.DISCUSSION,  now.minus(Duration.ofDays(3)));\n        graph.recordInteractionBySlack(\"CR-811\",   \"U107\", \"U108\", InteractionType.CODE_REVIEW, now.minus(Duration.ofDays(1)));\n        graph.recordInteractionBySlack(\"JIRA-812\", \"U101\", \"U102\", InteractionType.JIRA,        now.minus(Duration.ofDays(2)));\n        graph.recordInteractionBySlack(\"DISC-813\", \"U105\", \"U106\", InteractionType.DISCUSSION,  now.minus(Duration.ofHours(12)));\n\n        // Older (> 14 days)\n        graph.recordInteractionBySlack(\"JIRA-750\", \"U101\", \"U108\", InteractionType.JIRA,        now.minus(Duration.ofDays(40)));\n        graph.recordInteractionBySlack(\"BUG-751\",  \"U102\", \"U103\", InteractionType.BUG,         now.minus(Duration.ofDays(20)));\n        graph.recordInteractionBySlack(\"DISC-752\", \"U104\", \"U107\", InteractionType.DISCUSSION,  now.minus(Duration.ofDays(25)));\n        graph.recordInteractionBySlack(\"JIRA-753\", \"U106\", \"U102\", InteractionType.JIRA,        now.minus(Duration.ofDays(31)));\n\n        return graph;\n    }\n}\n",
+      "metadata": {
+        "language": "java",
+        "id": "data-java-001",
+        "executionSummary": {
+          "executionOrder": 11,
+          "success": true
+        }
+      },
+      "execution_count": 11,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {},
+          "metadata": {},
+          "execution_count": 11
+        }
+      ]
+    },
+    {
+      "id": "step2b-why-render-001",
+      "cell_type": "markdown",
+      "source": "#### Step 2b: Render and analyze\nWe define a small runner that builds the graph, prints neighbors/top collaborators/shortest path, and then emits Mermaid diagrams inline for:\n- All interactions\n- Last 14 days",
+      "metadata": {
+        "language": "markdown",
+        "id": "step2b-why-render-001"
+      }
+    },
+    {
+      "id": "render-java-001",
+      "cell_type": "code",
+      "source": "import java.util.stream.Collectors;\n\nclass SlackNetworkRender {\n    static void run() {\n        Instant now = Instant.now();\n        ConnectionGraph graph = SlackEightEmployeesData.buildGraph(now);\n\n        System.out.println(\"All employees: \" + graph.getEmployees().values().stream().map(Employee::name).toList());\n\n        var e1 = \"E-2001\"; // Alice\n        var e5 = \"E-2005\"; // Eve\n        var e7 = \"E-2007\"; // Grace\n        var e6 = \"E-2006\"; // Frank\n        var e2 = \"E-2002\"; // Bob\n\n        System.out.println(\"\\nNeighbors for Alice:\");\n        graph.getNeighbors(e1).forEach((neighborId, weight) ->\n            System.out.println(\"  - \" + graph.nameOf(neighborId) + \" (weight=\" + weight + \")\")\n        );\n\n        System.out.println(\"\\nNeighbors for Eve:\");\n        graph.getNeighbors(e5).forEach((neighborId, weight) ->\n            System.out.println(\"  - \" + graph.nameOf(neighborId) + \" (weight=\" + weight + \")\")\n        );\n\n        System.out.println(\"\\nTop 3 collaborators for Grace:\");\n        graph.getTopCollaborators(e7, 3).forEach(entry ->\n            System.out.println(\"  - \" + graph.nameOf(entry.getKey()) + \" (weight=\" + entry.getValue() + \")\")\n        );\n\n        System.out.println(\"\\nShortest path (Frank -> Bob):\");\n        var path = graph.shortestPath(e6, e2);\n        if (path.isEmpty()) System.out.println(\"  No path\");\n        else System.out.println(\"  \" + path.stream().map(graph::nameOf).collect(Collectors.joining(\" -> \")));\n\n        String mAll = graph.toMermaid();\n        System.out.println(\"\\nMermaid (all interactions):\\n```mermaid\\n\" + mAll + \"```\\n\");\n\n        String m14 = graph.toMermaidFiltered(i -> i.timestamp().isAfter(now.minus(Duration.ofDays(14))));\n        System.out.println(\"Mermaid (last 14 days):\\n```mermaid\\n\" + m14 + \"```\\n\");\n    }\n}\n",
+      "metadata": {
+        "language": "java",
+        "id": "render-java-001",
+        "executionSummary": {
+          "executionOrder": 12,
+          "success": true
+        }
+      },
+      "execution_count": 12,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {},
+          "metadata": {},
+          "execution_count": 12
+        }
+      ]
+    },
+    {
+      "id": "step3-run-001",
+      "cell_type": "markdown",
+      "source": "#### Step 3: Run the renderer\nExecute the next cell to build the graph and display the Mermaid diagrams inline.",
+      "metadata": {
+        "language": "markdown",
+        "id": "step3-run-001"
+      }
+    },
+    {
+      "id": "run-demo-001",
+      "cell_type": "code",
+      "source": "SlackNetworkRender.run();",
+      "metadata": {
+        "language": "java",
+        "id": "run-demo-001",
+        "executionSummary": {
+          "executionOrder": 13,
+          "success": true
+        }
+      },
+      "execution_count": 13,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": "All employees: [Heidi, Grace, Frank, Eve, Dave, Cara, Bob, Alice]\n\nNeighbors for Alice:\n  - Heidi (weight=1)\n  - Dave (weight=1)\n  - Cara (weight=1)\n  - Bob (weight=3)\n\nNeighbors for Eve:\n  - Heidi (weight=1)\n  - Frank (weight=2)\n  - Bob (weight=1)\n\nTop 3 collaborators for Grace:\n  - Heidi (weight=1)\n  - Frank (weight=1)\n  - Dave (weight=1)\n\nShortest path (Frank -> Bob):\n  Frank -> Bob\n\nMermaid (all interactions):\n```mermaid\ngraph TD;\n  E_2008[\"Heidi<br/>UX\"];\n  E_2007[\"Grace<br/>Data\"];\n  E_2006[\"Frank<br/>Mobile\"];\n  E_2005[\"Eve<br/>Security\"];\n  E_2004[\"Dave<br/>Platform\"];\n  E_2003[\"Cara<br/>Payments\"];\n  E_2002[\"Bob<br/>SRE\"];\n  E_2001[\"Alice<br/>Platform\"];\n  E_2008 ---|1| E_2007;\n  E_2008 ---|1| E_2005;\n  E_2008 ---|1| E_2001;\n  E_2007 ---|1| E_2006;\n  E_2007 ---|1| E_2004;\n  E_2007 ---|1| E_2003;\n  E_2006 ---|2| E_2005;\n  E_2006 ---|1| E_2004;\n  E_2006 ---|1| E_2002;\n  E_2005 ---|1| E_2002;\n  E_2004 ---|1| E_2002;\n  E_2004 ---|1| E_2001;\n  E_2003 ---|1| E_2002;\n  E_2003 ---|1| E_2001;\n  E_2002 ---|3| E_2001;\n```\n\nMermaid (last 14 days):\n```mermaid\ngraph TD;\n  E_2008[\"Heidi<br/>UX\"];\n  E_2007[\"Grace<br/>Data\"];\n  E_2006[\"Frank<br/>Mobile\"];\n  E_2005[\"Eve<br/>Security\"];\n  E_2004[\"Dave<br/>Platform\"];\n  E_2003[\"Cara<br/>Payments\"];\n  E_2002[\"Bob<br/>SRE\"];\n  E_2001[\"Alice<br/>Platform\"];\n  E_2008 ---|1| E_2005;\n  E_2008 ---|1| E_2007;\n  E_2007 ---|1| E_2003;\n  E_2007 ---|1| E_2006;\n  E_2006 ---|2| E_2005;\n  E_2006 ---|1| E_2004;\n  E_2005 ---|1| E_2002;\n  E_2004 ---|1| E_2001;\n  E_2004 ---|1| E_2002;\n  E_2003 ---|1| E_2001;\n  E_2002 ---|3| E_2001;\n```\n\n"
+          },
+          "metadata": {},
+          "execution_count": 13
+        }
+      ]
+    },
+    {
+      "id": "step4-custom-001",
+      "cell_type": "markdown",
+      "source": "#### Step 4 (Optional): Custom time window\nGenerate a filtered Mermaid graph for a custom number of days without changing the data builder or renderer.",
+      "metadata": {
+        "language": "markdown",
+        "id": "step4-custom-001"
+      }
+    },
+    {
+      "id": "custom-java-001",
+      "cell_type": "code",
+      "source": "int days = 7; // tweak as needed\nvar g2 = SlackEightEmployeesData.buildGraph(Instant.now());\nString mCustom = g2.toMermaidFiltered(i -> i.timestamp().isAfter(Instant.now().minus(Duration.ofDays(days))));\nSystem.out.println(\"```mermaid\\n\" + mCustom + \"\\n```\");",
+      "metadata": {
+        "language": "java",
+        "id": "custom-java-001",
+        "executionSummary": {
+          "executionOrder": 14,
+          "success": true
+        }
+      },
+      "execution_count": 14,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": "```mermaid\ngraph TD;\n  E_2008[\"Heidi<br/>UX\"];\n  E_2007[\"Grace<br/>Data\"];\n  E_2006[\"Frank<br/>Mobile\"];\n  E_2005[\"Eve<br/>Security\"];\n  E_2004[\"Dave<br/>Platform\"];\n  E_2003[\"Cara<br/>Payments\"];\n  E_2002[\"Bob<br/>SRE\"];\n  E_2001[\"Alice<br/>Platform\"];\n  E_2008 ---|1| E_2005;\n  E_2008 ---|1| E_2007;\n  E_2007 ---|1| E_2003;\n  E_2007 ---|1| E_2006;\n  E_2006 ---|2| E_2005;\n  E_2006 ---|1| E_2004;\n  E_2005 ---|1| E_2002;\n  E_2004 ---|1| E_2002;\n  E_2003 ---|1| E_2001;\n  E_2002 ---|3| E_2001;\n\n```\n"
+          },
+          "metadata": {},
+          "execution_count": 14
+        }
+      ]
+    }
+  ]
+}
