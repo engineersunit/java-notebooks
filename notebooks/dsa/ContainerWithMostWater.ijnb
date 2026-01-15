@@ -1,0 +1,441 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 5,
+  "metadata": {
+    "language_info": {
+      "name": "java"
+    }
+  },
+  "cells": [
+    {
+      "id": "8ac9d8aa-0c9c-4392-964c-f84bc84dca34",
+      "cell_type": "markdown",
+      "source": "### [Container With Most Water](https://leetcode.com/problems/container-with-most-water/description/?envType=problem-list-v2&envId=greedy&)\n\n#### An Experiment with Java Streams",
+      "metadata": {
+        "language": "markdown",
+        "id": "8ac9d8aa-0c9c-4392-964c-f84bc84dca34"
+      }
+    },
+    {
+      "id": "c1ce04d6-fca7-4fa0-a1af-f06dad97e0c7",
+      "cell_type": "markdown",
+      "source": "You are given an integer array height of length n. There are n vertical lines drawn such that the two endpoints of the ith line are (i, 0) and (i, height[i]).\n\nFind two lines that together with the x-axis form a container, such that the container contains the most water.\n\nReturn the maximum amount of water a container can store.\n\nNotice that you may not slant the container.",
+      "metadata": {
+        "language": "markdown",
+        "id": "c1ce04d6-fca7-4fa0-a1af-f06dad97e0c7"
+      }
+    },
+    {
+      "id": "22ed2a84-bc08-4d34-b6dd-84b177ac4a62",
+      "cell_type": "markdown",
+      "source": "Let's assign a int array with the heights of the walls",
+      "metadata": {
+        "language": "markdown",
+        "id": "22ed2a84-bc08-4d34-b6dd-84b177ac4a62"
+      }
+    },
+    {
+      "id": "bc9e47b2-102f-4576-8cfc-58a99ae83c0f",
+      "cell_type": "code",
+      "source": "int[] heights = {1,8,6,2,5,4,8,3,7};",
+      "metadata": {
+        "language": "java",
+        "executionSummary": {
+          "executionOrder": 98,
+          "success": true
+        }
+      },
+      "execution_count": 98,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {},
+          "metadata": {},
+          "execution_count": 98
+        }
+      ]
+    },
+    {
+      "id": "c85d39aa-4a3f-452c-b725-ce7299d559b2",
+      "cell_type": "markdown",
+      "source": "```mermaid\nxychart-beta\n    title \"Bar Chart\"\n    x-axis [0, 1, 2, 3, 4, 5, 6, 7, 8]\n    y-axis \"Value\"\n    bar [1, 8, 6, 2, 5, 4, 8, 3, 7]\n```",
+      "metadata": {
+        "language": "markdown",
+        "id": "c85d39aa-4a3f-452c-b725-ce7299d559b2"
+      }
+    },
+    {
+      "id": "b15c0e73-d9e6-4876-986a-072b6b7fbb14",
+      "cell_type": "markdown",
+      "source": "Let's print each height",
+      "metadata": {
+        "language": "markdown",
+        "id": "b15c0e73-d9e6-4876-986a-072b6b7fbb14"
+      }
+    },
+    {
+      "id": "db9142c8-90a5-40c6-a838-aefb7ecba40c",
+      "cell_type": "code",
+      "source": "IO.print(\n    Arrays\n        .stream(heights)\n        .mapToObj(String::valueOf)\n        .collect(\n            Collectors\n                .joining(\", \"))\n        );",
+      "metadata": {
+        "language": "java",
+        "executionSummary": {
+          "executionOrder": 99,
+          "success": true
+        }
+      },
+      "execution_count": 99,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": "1, 8, 6, 2, 5, 4, 8, 3, 7"
+          },
+          "metadata": {},
+          "execution_count": 99
+        }
+      ]
+    },
+    {
+      "id": "7bb93f5e-9d77-4974-8baf-f1b5a49daab4",
+      "cell_type": "markdown",
+      "source": "Let's create the bar chart using a util which generates a mermaid X Y Chart",
+      "metadata": {
+        "language": "markdown",
+        "id": "7bb93f5e-9d77-4974-8baf-f1b5a49daab4"
+      }
+    },
+    {
+      "id": "a6aed25d-78ff-4718-8b3f-c5907c40957a",
+      "cell_type": "code",
+      "source": "public static String generateMermaidBarChart(int[] array) {\n        StringBuilder mermaidSyntax = new StringBuilder();\n        mermaidSyntax.append(\"```mermaid\\n\");\n        mermaidSyntax.append(\"xychart-beta\\n\");\n        mermaidSyntax.append(\"    title \\\"Bar Chart\\\"\\n\");\n        mermaidSyntax.append(\"    x-axis [\");\n        \n        for (int i = 0; i < array.length; i++) {\n            mermaidSyntax.append(i);\n            if (i < array.length - 1) {\n                mermaidSyntax.append(\", \");\n            }\n        }\n        \n        mermaidSyntax.append(\"]\\n\");\n        mermaidSyntax.append(\"    y-axis \\\"Value\\\"\\n\");\n        mermaidSyntax.append(\"    bar [\");\n        \n        for (int i = 0; i < array.length; i++) {\n            mermaidSyntax.append(array[i]);\n            if (i < array.length - 1) {\n                mermaidSyntax.append(\", \");\n            }\n        }\n        \n        mermaidSyntax.append(\"]\\n\");\n        mermaidSyntax.append(\"```\");\n        \n        return mermaidSyntax.toString();\n    }",
+      "metadata": {
+        "language": "java",
+        "executionSummary": {
+          "executionOrder": 100,
+          "success": true
+        }
+      },
+      "execution_count": 100,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {},
+          "metadata": {},
+          "execution_count": 100
+        }
+      ]
+    },
+    {
+      "id": "e2afcdbb-e96a-4c8f-b342-a5be4e0dbcb9",
+      "cell_type": "code",
+      "source": "IO.println(generateMermaidBarChart(heights));",
+      "metadata": {
+        "language": "java",
+        "executionSummary": {
+          "executionOrder": 101,
+          "success": true
+        }
+      },
+      "execution_count": 101,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": "```mermaid\nxychart-beta\n    title \"Bar Chart\"\n    x-axis [0, 1, 2, 3, 4, 5, 6, 7, 8]\n    y-axis \"Value\"\n    bar [1, 8, 6, 2, 5, 4, 8, 3, 7]\n```\n"
+          },
+          "metadata": {},
+          "execution_count": 101
+        }
+      ]
+    },
+    {
+      "id": "d806f713-83c6-4d57-aadd-07d662c2944b",
+      "cell_type": "markdown",
+      "source": "Let's now paste the above output to a cell of type markdown",
+      "metadata": {
+        "language": "markdown",
+        "id": "d806f713-83c6-4d57-aadd-07d662c2944b"
+      }
+    },
+    {
+      "id": "9ebf6031-ef8d-4717-b368-805685692098",
+      "cell_type": "markdown",
+      "source": "```mermaid\nxychart-beta\n    title \"Bar Chart\"\n    x-axis [0, 1, 2, 3, 4, 5, 6, 7, 8]\n    y-axis \"Value\"\n    bar [1, 8, 6, 2, 5, 4, 8, 3, 7]\n```",
+      "metadata": {
+        "language": "markdown",
+        "id": "9ebf6031-ef8d-4717-b368-805685692098"
+      }
+    },
+    {
+      "id": "488385d7-736c-4773-a742-1a95622a9246",
+      "cell_type": "markdown",
+      "source": "Now lets print all possible areas of water when using a sliding window of 2\n\nLet's use Java 24 Feature Stream Gatherers",
+      "metadata": {
+        "language": "markdown",
+        "id": "488385d7-736c-4773-a742-1a95622a9246"
+      }
+    },
+    {
+      "id": "b68ede9a-1e5d-4cab-b1b3-49293d9d4d35",
+      "cell_type": "code",
+      "source": "IO.print(\n    IntStream\n        .of(heights)\n        .boxed()\n        .gather(Gatherers.windowSliding(2))\n        .toList()\n    );",
+      "metadata": {
+        "language": "java",
+        "executionSummary": {
+          "executionOrder": 102,
+          "success": true
+        }
+      },
+      "execution_count": 102,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": "[[1, 8], [8, 6], [6, 2], [2, 5], [5, 4], [4, 8], [8, 3], [3, 7]]"
+          },
+          "metadata": {},
+          "execution_count": 102
+        }
+      ]
+    },
+    {
+      "id": "b9b7a7f1-f937-471d-bea7-d7c5ebd43807",
+      "cell_type": "markdown",
+      "source": "Let's compute the max area of this sliding window of size 2",
+      "metadata": {
+        "language": "markdown",
+        "id": "b9b7a7f1-f937-471d-bea7-d7c5ebd43807"
+      }
+    },
+    {
+      "id": "dea40dc8-7ed3-4726-9f4b-b919bac2a4e6",
+      "cell_type": "code",
+      "source": "IO.print(\n    IntStream\n        .of(heights)\n        .boxed()\n        .gather(Gatherers.windowSliding(2))\n        .map(list -> list.stream()\n                         .min(Comparator.naturalOrder())\n                         .get())\n        .toList()\n    );",
+      "metadata": {
+        "language": "java",
+        "executionSummary": {
+          "executionOrder": 103,
+          "success": true
+        }
+      },
+      "execution_count": 103,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": "[1, 6, 2, 2, 4, 4, 3, 3]"
+          },
+          "metadata": {},
+          "execution_count": 103
+        }
+      ]
+    },
+    {
+      "id": "4f8dc503-7212-4279-a1ee-8bed21df9d9e",
+      "cell_type": "markdown",
+      "source": "Here the max area is 6",
+      "metadata": {
+        "language": "markdown",
+        "id": "4f8dc503-7212-4279-a1ee-8bed21df9d9e"
+      }
+    },
+    {
+      "id": "e1331648-b759-48b9-82f3-9572e0f98aaf",
+      "cell_type": "markdown",
+      "source": "Now lets print all possible areas of water when using a sliding window of 3",
+      "metadata": {
+        "language": "markdown",
+        "id": "e1331648-b759-48b9-82f3-9572e0f98aaf"
+      }
+    },
+    {
+      "id": "6356e383-9256-4b88-9020-8b6556d3c13d",
+      "cell_type": "code",
+      "source": "IO.print(\n    IntStream\n        .of(heights)\n        .boxed()\n        .gather(Gatherers.windowSliding(3))\n        .toList()\n    );",
+      "metadata": {
+        "language": "java",
+        "executionSummary": {
+          "executionOrder": 104,
+          "success": true
+        }
+      },
+      "execution_count": 104,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": "[[1, 8, 6], [8, 6, 2], [6, 2, 5], [2, 5, 4], [5, 4, 8], [4, 8, 3], [8, 3, 7]]"
+          },
+          "metadata": {},
+          "execution_count": 104
+        }
+      ]
+    },
+    {
+      "id": "8d07e608-1a1e-46b5-a482-0acece229b6d",
+      "cell_type": "markdown",
+      "source": "Let's compute the max area of this sliding window of size 3",
+      "metadata": {
+        "language": "markdown",
+        "id": "8d07e608-1a1e-46b5-a482-0acece229b6d"
+      }
+    },
+    {
+      "id": "b320a4b0-9173-445f-b15d-7141fee17ec8",
+      "cell_type": "code",
+      "source": "IO.print(\n    IntStream\n        .of(heights)\n        .boxed()\n        .gather(Gatherers.windowSliding(3))\n        .map(list -> list.stream()\n                         .min(Comparator.naturalOrder())\n                         .get())\n        .toList()\n    );",
+      "metadata": {
+        "language": "java",
+        "executionSummary": {
+          "executionOrder": 105,
+          "success": true
+        }
+      },
+      "execution_count": 105,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": "[1, 2, 2, 2, 4, 3, 3]"
+          },
+          "metadata": {},
+          "execution_count": 105
+        }
+      ]
+    },
+    {
+      "id": "2eb0fcb5-2b4a-4649-8207-a036cc20222d",
+      "cell_type": "markdown",
+      "source": "Here the max area is 4.\n\nAs you can observe increasing the window size did not increase the area",
+      "metadata": {
+        "language": "markdown",
+        "id": "2eb0fcb5-2b4a-4649-8207-a036cc20222d"
+      }
+    },
+    {
+      "id": "6bef886f-9efa-49cb-9386-e835149d8072",
+      "cell_type": "markdown",
+      "source": "Let's compute the area for all combinations using a double loop but with a *Stream twist*",
+      "metadata": {
+        "language": "markdown",
+        "id": "6bef886f-9efa-49cb-9386-e835149d8072"
+      }
+    },
+    {
+      "id": "9d5095a3-aab9-48e4-9cfb-0283f70ba852",
+      "cell_type": "code",
+      "source": "IO.print(\n    IntStream\n        .range(0, heights.length)\n        .boxed()\n        .flatMap(i -> IntStream\n                            .range(i, heights.length)\n                            .parallel()\n                            .mapToObj(j -> {\n                                int minHeight = Math.min(heights[i], heights[j]);\n                                int width = j - i;\n                                int area = minHeight * width;\n                                return area;\n                            }\n                        )\n                    )\n        .max(Comparator.naturalOrder())\n        .get()\n        );\n",
+      "metadata": {
+        "language": "java",
+        "executionSummary": {
+          "executionOrder": 106,
+          "success": true
+        }
+      },
+      "execution_count": 106,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": "49"
+          },
+          "metadata": {},
+          "execution_count": 106
+        }
+      ]
+    },
+    {
+      "id": "597c1bdf-3a30-4aba-a3b9-ed7c77664efa",
+      "cell_type": "markdown",
+      "source": "Now to optimize it we can use 2 pointers. \n\nIn order to use streams to work with 2 pointers, we will first create our own [Spliterator](https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Spliterator.html) by overriding [Spliterators.AbstractSpliterator](https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Spliterators.AbstractSpliterator.html)",
+      "metadata": {
+        "language": "markdown",
+        "id": "597c1bdf-3a30-4aba-a3b9-ed7c77664efa"
+      }
+    },
+    {
+      "id": "852b1316-3de4-4f3d-b153-94bd59e9133e",
+      "cell_type": "code",
+      "source": "private static class TwoPointerSpliterator extends Spliterators.AbstractSpliterator<int[]> {\n        private int left = 0;\n        private int right;\n\n        public TwoPointerSpliterator(int[] heights) {\n            super(heights.length * (heights.length - 1) / 2, 0);\n            this.right = heights.length - 1;\n        }\n\n        @Override\n        public boolean tryAdvance(java.util.function.Consumer<? super int[]> action) {\n            if (left < right) {\n                action.accept(new int[] {left, right});\n                if (heights[left] < heights[right]) {\n                    left++;\n                } else {\n                    right--;\n                }\n                return true;\n            }\n            return false;\n        }\n    }",
+      "metadata": {
+        "language": "java",
+        "executionSummary": {
+          "executionOrder": 107,
+          "success": true
+        }
+      },
+      "execution_count": 107,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {},
+          "metadata": {},
+          "execution_count": 107
+        }
+      ]
+    },
+    {
+      "id": "01208dc7-6352-4325-bbf4-7f3458197e85",
+      "cell_type": "markdown",
+      "source": "We will next use the [StreamSupport](https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/stream/StreamSupport.html) to create a stream which will stream the 2 pointers as per the 2 pointer algorithm",
+      "metadata": {
+        "language": "markdown",
+        "id": "01208dc7-6352-4325-bbf4-7f3458197e85"
+      }
+    },
+    {
+      "id": "f682df70-58c4-4e32-9eac-15e813704599",
+      "cell_type": "code",
+      "source": "public static Stream<int[]> twoPointerStream(int[] heights) {\n        return StreamSupport.stream(new TwoPointerSpliterator(heights), false);\n}",
+      "metadata": {
+        "language": "java",
+        "executionSummary": {
+          "executionOrder": 108,
+          "success": true
+        }
+      },
+      "execution_count": 108,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {},
+          "metadata": {},
+          "execution_count": 108
+        }
+      ]
+    },
+    {
+      "id": "34e9dbab-49dd-449e-82e4-8b8a6e171d57",
+      "cell_type": "markdown",
+      "source": "Using this steam, we can now with ease get the max area of the container",
+      "metadata": {
+        "language": "markdown",
+        "id": "34e9dbab-49dd-449e-82e4-8b8a6e171d57"
+      }
+    },
+    {
+      "id": "ad931e5e-ca4a-434b-8f03-eccd793f63af",
+      "cell_type": "code",
+      "source": "IO.print(\n        twoPointerStream(heights)\n                .map(pair -> Math.min(heights[pair[0]], heights[pair[1]]) * (pair[1] - pair[0]))\n                .max(Comparator.naturalOrder())\n                .orElse(0)\n        );",
+      "metadata": {
+        "language": "java",
+        "executionSummary": {
+          "executionOrder": 109,
+          "success": true
+        }
+      },
+      "execution_count": 109,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": "49"
+          },
+          "metadata": {},
+          "execution_count": 109
+        }
+      ]
+    }
+  ]
+}

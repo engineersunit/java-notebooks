@@ -17,6 +17,15 @@
       }
     },
     {
+      "id": "229acc37-2a3a-43af-a261-e640c7c9ae6c",
+      "cell_type": "markdown",
+      "source": "```mermaid\ngraph TD;\n  E_2008[\"Heidi<br/>UX\"];\n  E_2007[\"Grace<br/>Data\"];\n  E_2006[\"Frank<br/>Mobile\"];\n  E_2005[\"Eve<br/>Security\"];\n  E_2004[\"Dave<br/>Platform\"];\n  E_2003[\"Cara<br/>Payments\"];\n  E_2002[\"Bob<br/>SRE\"];\n  E_2001[\"Alice<br/>Platform\"];\n  E_2008 ---|1| E_2005;\n  E_2008 ---|1| E_2007;\n  E_2007 ---|1| E_2003;\n  E_2007 ---|1| E_2006;\n  E_2006 ---|2| E_2005;\n  E_2006 ---|1| E_2004;\n  E_2005 ---|1| E_2002;\n  E_2004 ---|1| E_2002;\n  E_2003 ---|1| E_2001;\n  E_2002 ---|3| E_2001;\n\n```",
+      "metadata": {
+        "language": "markdown",
+        "id": "229acc37-2a3a-43af-a261-e640c7c9ae6c"
+      }
+    },
+    {
       "id": "step1-why-001",
       "cell_type": "markdown",
       "source": "#### Step 1: Domain model types\nWe start with the core concepts:\n- InteractionType: classification of interaction (JIRA, BUG, code review, discussion)\n- Employee: identity, email, department\n- SlackUser: maps a Slack user to an Employee\n- Interaction: one event connecting two employees on a specific issue",
@@ -205,6 +214,24 @@
           "execution_count": 14
         }
       ]
+    },
+    {
+      "id": "3eafca27-7931-417e-b1d6-f47367b48700",
+      "cell_type": "markdown",
+      "source": "```mermaid\ngraph TD;\n  E_2008[\"Heidi<br/>UX\"];\n  E_2007[\"Grace<br/>Data\"];\n  E_2006[\"Frank<br/>Mobile\"];\n  E_2005[\"Eve<br/>Security\"];\n  E_2004[\"Dave<br/>Platform\"];\n  E_2003[\"Cara<br/>Payments\"];\n  E_2002[\"Bob<br/>SRE\"];\n  E_2001[\"Alice<br/>Platform\"];\n  E_2008 ---|1| E_2005;\n  E_2008 ---|1| E_2007;\n  E_2007 ---|1| E_2003;\n  E_2007 ---|1| E_2006;\n  E_2006 ---|2| E_2005;\n  E_2006 ---|1| E_2004;\n  E_2005 ---|1| E_2002;\n  E_2004 ---|1| E_2002;\n  E_2003 ---|1| E_2001;\n  E_2002 ---|3| E_2001;\n\n```",
+      "metadata": {
+        "language": "markdown",
+        "id": "3eafca27-7931-417e-b1d6-f47367b48700"
+      }
+    },
+    {
+      "id": "a4fefaeb-e033-4266-acef-b7c6f5480dd7",
+      "cell_type": "markdown",
+      "source": "",
+      "metadata": {
+        "language": "markdown",
+        "id": "a4fefaeb-e033-4266-acef-b7c6f5480dd7"
+      }
     }
   ]
 }
