@@ -1,0 +1,212 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 5,
+  "metadata": {
+    "language_info": {
+      "name": "java"
+    }
+  },
+  "cells": [
+    {
+      "id": "7a60ab5a-d225-41b1-a7b2-e81f5d7d7845",
+      "cell_type": "markdown",
+      "source": "[Squares of a Sorted Array](https://leetcode.com/problems/squares-of-a-sorted-array/description/)\n\nGiven an integer array nums sorted in non-decreasing order, return an array of the squares of each number sorted in non-decreasing order.",
+      "metadata": {
+        "language": "markdown",
+        "id": "7a60ab5a-d225-41b1-a7b2-e81f5d7d7845"
+      }
+    },
+    {
+      "id": "4e4e02da-76c0-48fb-97f3-897c14df9182",
+      "cell_type": "code",
+      "source": "int[] nums = {-4,-1,0,3,10};",
+      "metadata": {
+        "language": "java",
+        "id": "4e4e02da-76c0-48fb-97f3-897c14df9182",
+        "executionSummary": {
+          "executionOrder": 67,
+          "success": true
+        }
+      },
+      "execution_count": 67,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {},
+          "metadata": {},
+          "execution_count": 67
+        }
+      ]
+    },
+    {
+      "id": "02c8abec-fdbd-425a-b2f3-4e2ae68d4e00",
+      "cell_type": "markdown",
+      "source": "Let print all the numbers and their squares",
+      "metadata": {
+        "language": "markdown",
+        "id": "02c8abec-fdbd-425a-b2f3-4e2ae68d4e00"
+      }
+    },
+    {
+      "id": "55c9bca4-ff58-4b7b-9128-a4bb5c19373f",
+      "cell_type": "code",
+      "source": "IO.print(\n    IntStream\n        .of(nums)\n        .boxed()\n        .collect(\n            Collectors\n                .toMap(n -> n, n -> n * n))\n)",
+      "metadata": {
+        "language": "java",
+        "id": "55c9bca4-ff58-4b7b-9128-a4bb5c19373f",
+        "executionSummary": {
+          "executionOrder": 68,
+          "success": true
+        }
+      },
+      "execution_count": 68,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": "{-1=1, 0=0, -4=16, 3=9, 10=100}"
+          },
+          "metadata": {},
+          "execution_count": 68
+        }
+      ]
+    },
+    {
+      "id": "e2c89de0-ccc5-4d97-b87d-888b46cb1ae1",
+      "cell_type": "markdown",
+      "source": "Observed that the square of a number flips a negative number to a positive one.\n\nNow lets sort it. Using stream has the time complexity of O(n log n)",
+      "metadata": {
+        "language": "markdown",
+        "id": "e2c89de0-ccc5-4d97-b87d-888b46cb1ae1"
+      }
+    },
+    {
+      "id": "242b5805-e0a7-482d-8631-5065a26904be",
+      "cell_type": "code",
+      "source": "IO.print(\n    IntStream\n        .of(nums)\n        .boxed()\n        .map(n -> n * n)\n        .sorted(Comparator.naturalOrder())\n        .toList()\n)",
+      "metadata": {
+        "language": "java",
+        "id": "242b5805-e0a7-482d-8631-5065a26904be",
+        "executionSummary": {
+          "executionOrder": 69,
+          "success": true
+        }
+      },
+      "execution_count": 69,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": "[0, 1, 9, 16, 100]"
+          },
+          "metadata": {},
+          "execution_count": 69
+        }
+      ]
+    },
+    {
+      "id": "ac72e9af-1730-4bf8-afe3-559939eb5311",
+      "cell_type": "markdown",
+      "source": "| Algorithm | Best-case | Average-case | Worst-case | \n| --- | --- | --- | --- | \n| Timsort (Java Stream) | O(n) | O(n log n) | O(n log n) | \n| Merge Sort | O(n log n) | O(n log n) | O(n log n) | \n| Quick Sort | O(n log n) | O(n log n) | O(n^2) | \n| Insertion Sort | O(n) | O(n^2) | O(n^2) |",
+      "metadata": {
+        "language": "markdown",
+        "id": "ac72e9af-1730-4bf8-afe3-559939eb5311"
+      }
+    },
+    {
+      "id": "c9a45957-1bd3-490e-97e3-1f0fa19ac209",
+      "cell_type": "markdown",
+      "source": "Now to optimize it we can use 2 pointers. \n\nIn order to use streams to work with 2 pointers, we will first create our own [Spliterator](https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Spliterator.html) by overriding [Spliterators.AbstractSpliterator](https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Spliterators.AbstractSpliterator.html)",
+      "metadata": {
+        "language": "markdown",
+        "id": "c9a45957-1bd3-490e-97e3-1f0fa19ac209"
+      }
+    },
+    {
+      "id": "1c1f55ba-e5da-47f5-9156-c43b26436bb1",
+      "cell_type": "code",
+      "source": "private static class TwoPointerSpliterator extends Spliterators.AbstractSpliterator<int[]> {\n        private int left = 0;\n        private int right;\n\n        public TwoPointerSpliterator(int[] nums) {\n            super(nums.length * (nums.length - 1) / 2, 0);\n            this.right = nums.length - 1;\n        }\n\n        @Override\n        public boolean tryAdvance(java.util.function.Consumer<? super int[]> action) {\n            if (left <= right) {\n                action.accept(new int[] {left, right});\n                if (Math.abs(nums[left]) > Math.abs(nums[right])) {\n                    left++;\n                } else {\n                    right--;\n                }\n                return true;\n            }\n            return false;\n        }\n    }",
+      "metadata": {
+        "language": "java",
+        "id": "1c1f55ba-e5da-47f5-9156-c43b26436bb1",
+        "executionSummary": {
+          "executionOrder": 70,
+          "success": true
+        }
+      },
+      "execution_count": 70,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {},
+          "metadata": {},
+          "execution_count": 70
+        }
+      ]
+    },
+    {
+      "id": "68d7ad14-c581-474c-9d37-1bfa5898e51e",
+      "cell_type": "markdown",
+      "source": "We will next use the [StreamSupport](https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/stream/StreamSupport.html) to create a stream which will stream the 2 pointers as per the 2 pointer algorithm",
+      "metadata": {
+        "language": "markdown",
+        "id": "68d7ad14-c581-474c-9d37-1bfa5898e51e"
+      }
+    },
+    {
+      "id": "71a007a2-dd62-4ffa-b72d-f37e5d515821",
+      "cell_type": "code",
+      "source": "public static Stream<int[]> twoPointerStream(int[] nums) {\n        return StreamSupport.stream(new TwoPointerSpliterator(nums), false);\n}",
+      "metadata": {
+        "language": "java",
+        "id": "71a007a2-dd62-4ffa-b72d-f37e5d515821",
+        "executionSummary": {
+          "executionOrder": 71,
+          "success": true
+        }
+      },
+      "execution_count": 71,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {},
+          "metadata": {},
+          "execution_count": 71
+        }
+      ]
+    },
+    {
+      "id": "2effc042-bbe5-4957-8817-4a71a4afeac0",
+      "cell_type": "markdown",
+      "source": "Using this steam, we can now with ease get the array sorted with squared values",
+      "metadata": {
+        "language": "markdown",
+        "id": "2effc042-bbe5-4957-8817-4a71a4afeac0"
+      }
+    },
+    {
+      "id": "fcf7f277-0f11-46a6-b2e1-30e7c5cd7c0c",
+      "cell_type": "code",
+      "source": "IO.print(\n        twoPointerStream(nums)\n                .map(pair -> Math.abs(nums[pair[0]]) < Math.abs(nums[pair[1]]) ? \n                        nums[pair[1]] * nums[pair[1]] : nums[pair[0]] * nums[pair[0]])\n                .toList()\n                .reversed()\n        );",
+      "metadata": {
+        "language": "java",
+        "id": "fcf7f277-0f11-46a6-b2e1-30e7c5cd7c0c",
+        "executionSummary": {
+          "executionOrder": 75,
+          "success": true
+        }
+      },
+      "execution_count": 75,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": "[0, 1, 9, 16, 100]"
+          },
+          "metadata": {},
+          "execution_count": 75
+        }
+      ]
+    }
+  ]
+}

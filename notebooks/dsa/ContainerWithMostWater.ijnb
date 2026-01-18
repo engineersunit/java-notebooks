@@ -40,20 +40,14 @@
       "source": "int[] heights = {1,8,6,2,5,4,8,3,7};",
       "metadata": {
         "language": "java",
+        "id": "bc9e47b2-102f-4576-8cfc-58a99ae83c0f",
         "executionSummary": {
-          "executionOrder": 98,
+          "executionOrder": 1,
           "success": true
         }
       },
-      "execution_count": 98,
-      "outputs": [
-        {
-          "output_type": "execute_result",
-          "data": {},
-          "metadata": {},
-          "execution_count": 98
-        }
-      ]
+      "execution_count": 1,
+      "outputs": []
     },
     {
       "id": "c85d39aa-4a3f-452c-b725-ce7299d559b2",
@@ -79,12 +73,13 @@
       "source": "IO.print(\n    Arrays\n        .stream(heights)\n        .mapToObj(String::valueOf)\n        .collect(\n            Collectors\n                .joining(\", \"))\n        );",
       "metadata": {
         "language": "java",
+        "id": "db9142c8-90a5-40c6-a838-aefb7ecba40c",
         "executionSummary": {
-          "executionOrder": 99,
+          "executionOrder": 2,
           "success": true
         }
       },
-      "execution_count": 99,
+      "execution_count": 2,
       "outputs": [
         {
           "output_type": "execute_result",
@@ -92,7 +87,7 @@
             "text/plain": "1, 8, 6, 2, 5, 4, 8, 3, 7"
           },
           "metadata": {},
-          "execution_count": 99
+          "execution_count": 2
         }
       ]
     },
@@ -111,20 +106,14 @@
       "source": "public static String generateMermaidBarChart(int[] array) {\n        StringBuilder mermaidSyntax = new StringBuilder();\n        mermaidSyntax.append(\"```mermaid\\n\");\n        mermaidSyntax.append(\"xychart-beta\\n\");\n        mermaidSyntax.append(\"    title \\\"Bar Chart\\\"\\n\");\n        mermaidSyntax.append(\"    x-axis [\");\n        \n        for (int i = 0; i < array.length; i++) {\n            mermaidSyntax.append(i);\n            if (i < array.length - 1) {\n                mermaidSyntax.append(\", \");\n            }\n        }\n        \n        mermaidSyntax.append(\"]\\n\");\n        mermaidSyntax.append(\"    y-axis \\\"Value\\\"\\n\");\n        mermaidSyntax.append(\"    bar [\");\n        \n        for (int i = 0; i < array.length; i++) {\n            mermaidSyntax.append(array[i]);\n            if (i < array.length - 1) {\n                mermaidSyntax.append(\", \");\n            }\n        }\n        \n        mermaidSyntax.append(\"]\\n\");\n        mermaidSyntax.append(\"```\");\n        \n        return mermaidSyntax.toString();\n    }",
       "metadata": {
         "language": "java",
+        "id": "a6aed25d-78ff-4718-8b3f-c5907c40957a",
         "executionSummary": {
-          "executionOrder": 100,
+          "executionOrder": 3,
           "success": true
         }
       },
-      "execution_count": 100,
-      "outputs": [
-        {
-          "output_type": "execute_result",
-          "data": {},
-          "metadata": {},
-          "execution_count": 100
-        }
-      ]
+      "execution_count": 3,
+      "outputs": []
     },
     {
       "id": "e2afcdbb-e96a-4c8f-b342-a5be4e0dbcb9",
@@ -132,12 +121,13 @@
       "source": "IO.println(generateMermaidBarChart(heights));",
       "metadata": {
         "language": "java",
+        "id": "e2afcdbb-e96a-4c8f-b342-a5be4e0dbcb9",
         "executionSummary": {
-          "executionOrder": 101,
+          "executionOrder": 4,
           "success": true
         }
       },
-      "execution_count": 101,
+      "execution_count": 4,
       "outputs": [
         {
           "output_type": "execute_result",
@@ -145,7 +135,7 @@
             "text/plain": "```mermaid\nxychart-beta\n    title \"Bar Chart\"\n    x-axis [0, 1, 2, 3, 4, 5, 6, 7, 8]\n    y-axis \"Value\"\n    bar [1, 8, 6, 2, 5, 4, 8, 3, 7]\n```\n"
           },
           "metadata": {},
-          "execution_count": 101
+          "execution_count": 4
         }
       ]
     },
@@ -182,12 +172,13 @@
       "source": "IO.print(\n    IntStream\n        .of(heights)\n        .boxed()\n        .gather(Gatherers.windowSliding(2))\n        .toList()\n    );",
       "metadata": {
         "language": "java",
+        "id": "b68ede9a-1e5d-4cab-b1b3-49293d9d4d35",
         "executionSummary": {
-          "executionOrder": 102,
+          "executionOrder": 5,
           "success": true
         }
       },
-      "execution_count": 102,
+      "execution_count": 5,
       "outputs": [
         {
           "output_type": "execute_result",
@@ -195,7 +186,7 @@
             "text/plain": "[[1, 8], [8, 6], [6, 2], [2, 5], [5, 4], [4, 8], [8, 3], [3, 7]]"
           },
           "metadata": {},
-          "execution_count": 102
+          "execution_count": 5
         }
       ]
     },
@@ -214,12 +205,13 @@
       "source": "IO.print(\n    IntStream\n        .of(heights)\n        .boxed()\n        .gather(Gatherers.windowSliding(2))\n        .map(list -> list.stream()\n                         .min(Comparator.naturalOrder())\n                         .get())\n        .toList()\n    );",
       "metadata": {
         "language": "java",
+        "id": "dea40dc8-7ed3-4726-9f4b-b919bac2a4e6",
         "executionSummary": {
-          "executionOrder": 103,
+          "executionOrder": 6,
           "success": true
         }
       },
-      "execution_count": 103,
+      "execution_count": 6,
       "outputs": [
         {
           "output_type": "execute_result",
@@ -227,7 +219,7 @@
             "text/plain": "[1, 6, 2, 2, 4, 4, 3, 3]"
           },
           "metadata": {},
-          "execution_count": 103
+          "execution_count": 6
         }
       ]
     },
@@ -255,12 +247,13 @@
       "source": "IO.print(\n    IntStream\n        .of(heights)\n        .boxed()\n        .gather(Gatherers.windowSliding(3))\n        .toList()\n    );",
       "metadata": {
         "language": "java",
+        "id": "6356e383-9256-4b88-9020-8b6556d3c13d",
         "executionSummary": {
-          "executionOrder": 104,
+          "executionOrder": 7,
           "success": true
         }
       },
-      "execution_count": 104,
+      "execution_count": 7,
       "outputs": [
         {
           "output_type": "execute_result",
@@ -268,7 +261,7 @@
             "text/plain": "[[1, 8, 6], [8, 6, 2], [6, 2, 5], [2, 5, 4], [5, 4, 8], [4, 8, 3], [8, 3, 7]]"
           },
           "metadata": {},
-          "execution_count": 104
+          "execution_count": 7
         }
       ]
     },
@@ -284,30 +277,31 @@
     {
       "id": "b320a4b0-9173-445f-b15d-7141fee17ec8",
       "cell_type": "code",
-      "source": "IO.print(\n    IntStream\n        .of(heights)\n        .boxed()\n        .gather(Gatherers.windowSliding(3))\n        .map(list -> list.stream()\n                         .min(Comparator.naturalOrder())\n                         .get())\n        .toList()\n    );",
+      "source": "IO.print(\n    IntStream\n        .of(heights)\n        .boxed()\n        .gather(Gatherers.windowSliding(3))\n        .map(list -> list.stream()\n                         .min(Comparator.naturalOrder())\n                         .get()*2)\n        .toList()\n    );",
       "metadata": {
         "language": "java",
+        "id": "b320a4b0-9173-445f-b15d-7141fee17ec8",
         "executionSummary": {
-          "executionOrder": 105,
+          "executionOrder": 8,
           "success": true
         }
       },
-      "execution_count": 105,
+      "execution_count": 8,
       "outputs": [
         {
           "output_type": "execute_result",
           "data": {
-            "text/plain": "[1, 2, 2, 2, 4, 3, 3]"
+            "text/plain": "[2, 4, 4, 4, 8, 6, 6]"
           },
           "metadata": {},
-          "execution_count": 105
+          "execution_count": 8
         }
       ]
     },
     {
       "id": "2eb0fcb5-2b4a-4649-8207-a036cc20222d",
       "cell_type": "markdown",
-      "source": "Here the max area is 4.\n\nAs you can observe increasing the window size did not increase the area",
+      "source": "Here the max area is 8.\n\nAs you can observe increasing the window size did increase the area",
       "metadata": {
         "language": "markdown",
         "id": "2eb0fcb5-2b4a-4649-8207-a036cc20222d"
@@ -328,12 +322,13 @@
       "source": "IO.print(\n    IntStream\n        .range(0, heights.length)\n        .boxed()\n        .flatMap(i -> IntStream\n                            .range(i, heights.length)\n                            .parallel()\n                            .mapToObj(j -> {\n                                int minHeight = Math.min(heights[i], heights[j]);\n                                int width = j - i;\n                                int area = minHeight * width;\n                                return area;\n                            }\n                        )\n                    )\n        .max(Comparator.naturalOrder())\n        .get()\n        );\n",
       "metadata": {
         "language": "java",
+        "id": "9d5095a3-aab9-48e4-9cfb-0283f70ba852",
         "executionSummary": {
-          "executionOrder": 106,
+          "executionOrder": 9,
           "success": true
         }
       },
-      "execution_count": 106,
+      "execution_count": 9,
       "outputs": [
         {
           "output_type": "execute_result",
@@ -341,7 +336,7 @@
             "text/plain": "49"
           },
           "metadata": {},
-          "execution_count": 106
+          "execution_count": 9
         }
       ]
     },
@@ -360,20 +355,14 @@
       "source": "private static class TwoPointerSpliterator extends Spliterators.AbstractSpliterator<int[]> {\n        private int left = 0;\n        private int right;\n\n        public TwoPointerSpliterator(int[] heights) {\n            super(heights.length * (heights.length - 1) / 2, 0);\n            this.right = heights.length - 1;\n        }\n\n        @Override\n        public boolean tryAdvance(java.util.function.Consumer<? super int[]> action) {\n            if (left < right) {\n                action.accept(new int[] {left, right});\n                if (heights[left] < heights[right]) {\n                    left++;\n                } else {\n                    right--;\n                }\n                return true;\n            }\n            return false;\n        }\n    }",
       "metadata": {
         "language": "java",
+        "id": "852b1316-3de4-4f3d-b153-94bd59e9133e",
         "executionSummary": {
-          "executionOrder": 107,
+          "executionOrder": 10,
           "success": true
         }
       },
-      "execution_count": 107,
-      "outputs": [
-        {
-          "output_type": "execute_result",
-          "data": {},
-          "metadata": {},
-          "execution_count": 107
-        }
-      ]
+      "execution_count": 10,
+      "outputs": []
     },
     {
       "id": "01208dc7-6352-4325-bbf4-7f3458197e85",
@@ -390,20 +379,14 @@
       "source": "public static Stream<int[]> twoPointerStream(int[] heights) {\n        return StreamSupport.stream(new TwoPointerSpliterator(heights), false);\n}",
       "metadata": {
         "language": "java",
+        "id": "f682df70-58c4-4e32-9eac-15e813704599",
         "executionSummary": {
-          "executionOrder": 108,
+          "executionOrder": 11,
           "success": true
         }
       },
-      "execution_count": 108,
-      "outputs": [
-        {
-          "output_type": "execute_result",
-          "data": {},
-          "metadata": {},
-          "execution_count": 108
-        }
-      ]
+      "execution_count": 11,
+      "outputs": []
     },
     {
       "id": "34e9dbab-49dd-449e-82e4-8b8a6e171d57",
@@ -420,12 +403,13 @@
       "source": "IO.print(\n        twoPointerStream(heights)\n                .map(pair -> Math.min(heights[pair[0]], heights[pair[1]]) * (pair[1] - pair[0]))\n                .max(Comparator.naturalOrder())\n                .orElse(0)\n        );",
       "metadata": {
         "language": "java",
+        "id": "ad931e5e-ca4a-434b-8f03-eccd793f63af",
         "executionSummary": {
-          "executionOrder": 109,
+          "executionOrder": 12,
           "success": true
         }
       },
-      "execution_count": 109,
+      "execution_count": 12,
       "outputs": [
         {
           "output_type": "execute_result",
@@ -433,7 +417,7 @@
             "text/plain": "49"
           },
           "metadata": {},
-          "execution_count": 109
+          "execution_count": 12
         }
       ]
     }
